@@ -17,8 +17,8 @@ export default function Welcome({ navigation }) {
       </View>
 
       <View style={styles.bottom}>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText} onPress={()=>  navigation.navigate('onboarding')}>Empecemos</Text>
+        <TouchableOpacity style={styles.button} onPress={()=>  navigation.navigate('signUpFlowStackNatigator')}>
+          <Text style={styles.buttonText}>Empecemos</Text>
         </TouchableOpacity>
         <Text style={styles.loginText}>
           ¿Ya tenés usuario? <Text style={styles.loginLink}>Inicia sesión</Text>

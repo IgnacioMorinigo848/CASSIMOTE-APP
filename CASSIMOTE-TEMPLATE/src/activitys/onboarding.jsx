@@ -1,13 +1,70 @@
 import React, { useState,useCallback } from "react";
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, Dimensions } from "react-native";
 import QuestionBock from "../components/onboarding/questionBock.jsx"
 import questions from "../utils/onboarding/questionScript.js";
 import { useFocusEffect } from "@react-navigation/native";
+import useScale from "../helper/calculateDimentions.js"
 
 export default function Onboarding({ navigation }) {
   const [index, setIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [responses, setResponses] = useState([]);
+  const { scaleWidth, scaleHeight, scaleFont } = useScale();
+  const {width,height} = Dimensions.get("window");
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: scaleWidth(20) },  // padding responsivo
+  question: { 
+    left: scaleWidth(0),
+    top: scaleHeight(13),
+    fontFamily: 'Inter',
+    fontStyle: "bold",
+    fontSize: scaleFont(16),
+    lineHeight: scaleFont(29),
+    color: "#000000",
+
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: scaleHeight(20),
+  },
+  imformationContainer: {
+  marginTop: scaleHeight(40),
+  paddingHorizontal: scaleWidth(20),
+  width: "100%",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+informationText: {
+  fontFamily: 'Inter',
+  fontSize: scaleFont(15),
+  lineHeight: scaleHeight(20),
+  color: "#26355D",
+  textAlign: "center",
+},
+  button: {
+    width: scaleWidth(337.5),     
+    height: scaleHeight(53.36),  
+    left: scaleWidth(9.375),      
+    top: scaleHeight(33.35),     
+    backgroundColor: 'rgba(175, 71, 210, 0.46)',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontFamily: 'Inter',
+    fontStyle: 'normal',
+    fontWeight: '500',
+    fontSize: scaleFont(30),
+    lineHeight: scaleHeight(36),
+    textAlign: 'center',
+    color: '#26355D',
+  },
+});
+
 
   const handleBack = useCallback(() => {
   if (index > 0) {
@@ -42,7 +99,7 @@ export default function Onboarding({ navigation }) {
         setIndex(index + 1);
         setSelectedOption(newResponses[index + 1] ?? null);
       } else {
-        console.log("Respuestas:", newResponses);
+        navigation.navigate("signUpFlowStackNatigator");
       }
     }
   };
@@ -57,6 +114,9 @@ export default function Onboarding({ navigation }) {
         selectedOption={selectedOption}
         onSelect={setSelectedOption}
       />
+      <View style={styles.imformationContainer}>
+        <Text style={styles.informationText} >Usamos esta informacion para calcular tus neceidades y que tengas recomendaciones personalizadas</Text>
+      </View>
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonText}>Siguiente</Text>
@@ -64,21 +124,6 @@ export default function Onboarding({ navigation }) {
       </View>
     </View>
   );
-}
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  question: { fontSize: 18, marginBottom: 16 },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
-  },
-  button: {
-    backgroundColor: "#B47CF2",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-});
+};
+
