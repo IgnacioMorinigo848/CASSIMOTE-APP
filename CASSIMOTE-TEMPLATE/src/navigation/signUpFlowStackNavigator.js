@@ -1,7 +1,7 @@
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
-import StepOne from "../activitys/signUp/stepOne" 
-import StepTwo from "../activitys/signUp/stepTwo";
-import StepThree from "../activitys/signUp/stepThree";
+import StepOne from "../screens/signUp/stepOne" 
+import StepTwo from "../screens/signUp/stepTwo";
+import StepThree from "../screens/signUp/stepThree";
 
 export default function SignUpFlowStackNatigator(){
     const Stack = createNativeStackNavigator();
