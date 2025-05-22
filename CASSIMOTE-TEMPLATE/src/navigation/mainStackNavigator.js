@@ -6,6 +6,7 @@ import Onboarding from "../screens/onboarding/Onboarding.jsx";
 import SignUpFlowStackNatigator from "../navigation/signUpFlowStackNavigator.js"
 import SingIn from "../screens/signIn/SignIn.jsx";
 import RecoverAccountFlowStackNavigator from "../navigation/recoverAccountFlowStackNavigator.js";
+import Profile from "../screens/profile/Profile.jsx";
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,7 @@ export default function mainStackNavigator() {
             <Stack.Screen name="signIn" component={SingIn} options={{headerShown:false}}/>
             <Stack.Screen name="signUpFlowStackNatigator" component={SignUpFlowStackNatigator} options={{headerShown:false}}/>
             <Stack.Screen name="recoverAccountFlowStackNavigator" component={RecoverAccountFlowStackNavigator} options={{headerShown:false}}/>
+            <Stack.Screen name="profile" component={Profile} options={{headerShown:false}}/>
         </Stack.Navigator>
     );
 };

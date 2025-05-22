@@ -29,7 +29,6 @@ export default function InputComponent({
           placeholderTextColor="#999"
         />
 
-        {/* Mostrar ícono para ver/ocultar contraseña */}
         {isSecret && (
           <TouchableOpacity
             onPress={() => setVisible(!visible)}
@@ -43,7 +42,6 @@ export default function InputComponent({
           </TouchableOpacity>
         )}
 
-        {/* Mostrar validación de entrada */}
         {showValidationIcon && !isSecret && (
           <View style={styles.iconContainer}>
             { error ? (

@@ -16,7 +16,7 @@ export default function Welcome({ navigation }) {
       </View>
 
       <View style={styles.bottom}>
-        <TouchableOpacity style={styles.button} onPress={()=>  navigation.navigate('onboarding')}>
+        <TouchableOpacity style={styles.button} onPress={()=>  navigation.navigate('profile')}>
           <Text style={styles.buttonText}>Empecemos</Text>
         </TouchableOpacity>
         <Text style={styles.loginText}>
