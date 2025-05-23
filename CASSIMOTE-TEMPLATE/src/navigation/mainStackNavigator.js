@@ -7,6 +7,9 @@ import SignUpFlowStackNatigator from "../navigation/signUpFlowStackNavigator.js"
 import SingIn from "../screens/signIn/SignIn.jsx";
 import RecoverAccountFlowStackNavigator from "../navigation/recoverAccountFlowStackNavigator.js";
 import Profile from "../screens/profile/Profile.jsx";
+import SearchBar from "../screens/SearchBar/FilterScreen.jsx";
+import FilteredResultsScreen from '../screens/home/FilteredResultsScreen.jsx';
+import RecipeDetailScreen from '../screens/Recipes/RecipeDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +23,9 @@ export default function mainStackNavigator() {
             <Stack.Screen name="signUpFlowStackNatigator" component={SignUpFlowStackNatigator} options={{headerShown:false}}/>
             <Stack.Screen name="recoverAccountFlowStackNavigator" component={RecoverAccountFlowStackNavigator} options={{headerShown:false}}/>
             <Stack.Screen name="profile" component={Profile} options={{headerShown:false}}/>
+            <Stack.Screen name="filter" component={SearchBar} />
+            <Stack.Screen name="filteredResults" component={FilteredResultsScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ title: 'Ver Receta' }}/>
         </Stack.Navigator>
     );
 };
