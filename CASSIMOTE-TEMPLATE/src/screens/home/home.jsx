@@ -66,13 +66,14 @@ export default function Home() {
       )}
 
 
-      <TouchableOpacity onPress={() =>navigation.navigate('RecipeDetail')}>
-          <Text style={styles.subTitle}>Últimas Recetas Compartidas</Text> 
-          <Image
-            source={require('../../assets/homeImages/latest.png')}
-            style={styles.featuredImage}
-          />
-      </TouchableOpacity>
+<TouchableOpacity onPress={() => navigation.navigate('RecipeDetail')}>
+  <Text style={styles.subTitle}>Últimas Recetas Compartidas</Text> 
+  <Image
+    source={require('../../assets/homeImages/latest.png')}
+    style={styles.featuredImage}
+  />
+</TouchableOpacity>
+
 
       <Text style={styles.subTitle}>Categorías</Text>
       <FlatList

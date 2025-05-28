@@ -11,6 +11,8 @@ import SearchBar from "../screens/SearchBar/FilterScreen.jsx";
 import FilteredResultsScreen from '../screens/home/FilteredResultsScreen.jsx';
 import RecipeDetailScreen from '../screens/Recipes/RecipeDetailScreen';
 
+import AddRatingScreen from '../screens/Recipes/AddRatingScreen'; // crearás esta luego
+
 const Stack = createNativeStackNavigator();
 
 export default function mainStackNavigator() {
@@ -26,6 +28,7 @@ export default function mainStackNavigator() {
             <Stack.Screen name="filter" component={SearchBar} />
             <Stack.Screen name="filteredResults" component={FilteredResultsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ title: 'Ver Receta' }}/>
+            <Stack.Screen name="AddRating" component={AddRatingScreen} />
         </Stack.Navigator>
     );
 };

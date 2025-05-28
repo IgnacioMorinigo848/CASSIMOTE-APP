@@ -1,8 +1,11 @@
 // src/screens/Recipes/RecipeDetailScreen.jsx
 
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native';
+import {
+  View, Text, Image, StyleSheet, TouchableOpacity, TextInput, ScrollView
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const recipeData = {
   image: require('../../assets/homeImages/latest.png'),
@@ -27,6 +30,8 @@ const recipeData = {
 export default function RecipeDetailScreen() {
   const [portions, setPortions] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [activeTab, setActiveTab] = useState('Ingredientes');
+  const navigation = useNavigation();
 
   const handlePortionChange = (change) => {
     if (portions + change > 0) {
@@ -35,9 +40,9 @@ export default function RecipeDetailScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Image source={recipeData.image} style={styles.image} />
-      <TouchableOpacity style={styles.backButton}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color="white" />
       </TouchableOpacity>
 
@@ -70,42 +75,66 @@ export default function RecipeDetailScreen() {
         <Text>⏰ {recipeData.time}</Text>
       </View>
 
-      {/* Tabs: Ingredientes / Pasos */}
+      {/* Tabs */}
       <View style={styles.tabsRow}>
-        <Text style={styles.activeTab}>Ingredientes</Text>
-        <Text style={styles.inactiveTab}>Pasos</Text>
-      </View>
-
-      {/* Porciones */}
-      <View style={styles.portionsRow}>
-        <TouchableOpacity onPress={() => handlePortionChange(-1)}>
-          <Text style={styles.portionButton}>-</Text>
+        <TouchableOpacity onPress={() => setActiveTab('Ingredientes')}>
+          <Text style={activeTab === 'Ingredientes' ? styles.activeTab : styles.inactiveTab}>
+            Ingredientes
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.portionsText}>{portions} Porciones</Text>
-        <TouchableOpacity onPress={() => handlePortionChange(1)}>
-          <Text style={styles.portionButton}>+</Text>
+        <TouchableOpacity onPress={() => setActiveTab('Pasos')}>
+          <Text style={activeTab === 'Pasos' ? styles.activeTab : styles.inactiveTab}>
+            Pasos
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Ingredientes */}
-      {recipeData.ingredients.map((item, index) => (
-        <View key={index} style={styles.ingredientRow}>
-          <TextInput style={styles.ingredientInput} editable={false} value={item.name} />
-          <Text style={styles.quantity}>{item.quantity * portions}</Text>
+      {/* Porciones e Ingredientes o Pasos */}
+      {activeTab === 'Ingredientes' ? (
+        <>
+          <View style={styles.portionsRow}>
+            <TouchableOpacity onPress={() => handlePortionChange(-1)}>
+              <Text style={styles.portionButton}>-</Text>
+            </TouchableOpacity>
+            <Text style={styles.portionsText}>{portions} Porciones</Text>
+            <TouchableOpacity onPress={() => handlePortionChange(1)}>
+              <Text style={styles.portionButton}>+</Text>
+            </TouchableOpacity>
+          </View>
+          {recipeData.ingredients.map((item, index) => (
+            <View key={index} style={styles.ingredientRow}>
+              <TextInput
+                style={styles.ingredientInput}
+                editable={false}
+                value={item.name}
+              />
+              <Text style={styles.quantity}>{item.quantity * portions}</Text>
+            </View>
+          ))}
+        </>
+      ) : (
+        <View style={{ padding: 10 }}>
+          {recipeData.steps.map((step, i) => (
+            <Text key={i} style={{ marginBottom: 8 }}>{step}</Text>
+          ))}
         </View>
-      ))}
+      )}
 
-      {/* Agregar valoración */}
-      <TouchableOpacity style={styles.ratingButton}>
+      {/* Botón para agregar valoración */}
+      <TouchableOpacity
+        style={styles.ratingButton}
+        onPress={() => navigation.navigate('AddRating')}
+      >
         <Text style={{ color: 'white' }}>Agrega tu valoración de la receta</Text>
       </TouchableOpacity>
 
       {/* Comentarios */}
       <Text style={styles.commentsTitle}>Valoraciones</Text>
       {recipeData.comments.map((c, index) => (
-        <View key={index}>
+        <View key={index} style={{ paddingHorizontal: 10, marginBottom: 10 }}>
+          <Text style={{ fontWeight: 'bold' }}>{c.user}</Text>
           <Text>{c.comment}</Text>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{ flexDirection: 'row', marginTop: 2 }}>
             {[...Array(5)].map((_, i) => (
               <Ionicons
                 key={i}
@@ -117,7 +146,7 @@ export default function RecipeDetailScreen() {
           </View>
         </View>
       ))}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -125,12 +154,17 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   image: { width: '100%', height: 200 },
   backButton: { position: 'absolute', top: 30, left: 10 },
-  starsRow: { flexDirection: 'row', padding: 10 },
-  recipeTitle: { fontSize: 18, fontWeight: 'bold', paddingHorizontal: 10 },
+  starsRow: { flexDirection: 'row', padding: 10, alignItems: 'center' },
+  recipeTitle: { fontSize: 20, fontWeight: 'bold', paddingHorizontal: 10 },
   infoRow: { flexDirection: 'row', justifyContent: 'space-around', padding: 10 },
   tabsRow: { flexDirection: 'row', paddingHorizontal: 10 },
-  activeTab: { borderBottomWidth: 2, borderBottomColor: 'purple', marginRight: 20 },
-  inactiveTab: { color: '#aaa' },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: 'purple',
+    marginRight: 20,
+    fontWeight: 'bold',
+  },
+  inactiveTab: { color: '#aaa', marginRight: 20 },
   portionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -164,5 +198,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  commentsTitle: { fontSize: 16, fontWeight: 'bold', margin: 10 },
+  commentsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    margin: 10,
+    marginTop: 20,
+  },
 });
