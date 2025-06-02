@@ -12,16 +12,15 @@ export default function GetImageComponent({ visible, setVisible, onImageSelected
       return;
     }
 
-    const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      allowsEditing: true,
-    });
-
+  const resultado = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaType.IMAGE,
+    allowsEditing: true,
+    quality: 1,
+  });
     if (!resultado.canceled) {
       onImageSelected(resultado.assets[0].uri); 
+       setVisible(false);
     }
-    setVisible(false);
   };
 
   const tomarFoto = async () => {
@@ -37,8 +36,8 @@ export default function GetImageComponent({ visible, setVisible, onImageSelected
 
     if (!resultado.canceled) {
       onImageSelected(resultado.assets[0].uri); 
+      setVisible(false);
     }
-    setVisible(false);
   };
 
   return (

@@ -22,7 +22,7 @@ export default function SingIn({navigation}){
 
     return (
         <SafeAreaView style={styles.container}>
-            <ButtonBack navigation={navigation}/>
+            <View style={styles.buttonBackComponet}><ButtonBack navigation={navigation}/></View>
             <View style={styles.content}>
                 <Text style={styles.title}>Iniciar Sesion</Text>
                 <View style={styles.input}>
@@ -71,6 +71,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems:"center",
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, 
+  },
+  buttonBackComponet:{
+    position:"absolute",
+    left: 15,
+    zIndex: 1,
+    top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 50,
   },
   content: {
     flex:1,

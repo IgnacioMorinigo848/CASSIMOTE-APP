@@ -1,9 +1,9 @@
 import { View, TouchableOpacity,Text, StyleSheet } from "react-native";
 
-export default function ButtonComponent({children,width="85%",color="#FFFF",onPress}){
+export default function ButtonComponent({children,width="85%",color="#FFFF",backgroundColor="#DAA1F3",onPress}){
     return(
         <View style={styles.container}>
-            <TouchableOpacity style={[styles.button,{width}]} onPress={onPress}>
+            <TouchableOpacity style={[styles.button,{width},{backgroundColor}]} onPress={onPress}>
                <Text style={[styles.text,{color}]}>{children}</Text>
             </TouchableOpacity>
         </View>
@@ -18,7 +18,6 @@ const styles = StyleSheet.create({
   },
   button: {
     padding: 12,
-    backgroundColor: '#DAA1F3',
     borderRadius: 8,
     alignItems: 'center',
   },
