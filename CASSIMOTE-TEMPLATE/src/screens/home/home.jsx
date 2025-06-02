@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import BottomBar from '../../components/BottonBar';
 
 const categories = [
   { title: 'Lo último', image: require('../../assets/homeImages/latest.png') },
@@ -87,6 +88,7 @@ export default function Home() {
           </TouchableOpacity>
         )}
       />
+      <BottomBar/>
     </View>
   );
 }

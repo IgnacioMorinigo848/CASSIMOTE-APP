@@ -2,12 +2,14 @@ import { StyleSheet, Text, View, SafeAreaView, Platform, StatusBar, Image, Touch
 import BottomBar from "../../components/BottonBar";
 import { FontAwesome5, Feather } from '@expo/vector-icons';
 import { useState, useEffect } from "react";
-import userData from "../../utils/profile/userData";
+import {userData,recipes} from "../../utils/profile/data";
 import getInitials from "../../helper/getInitials";
 import ProfileRecipeCard from "../../components/ProfileRecipeCard";
+import SesionCloseComponent from "./SesionCloseComponent";
 
 export default function Profile({ navigation }) {
   const [user, setUser] = useState(null);
+  const [visible,setVisible] = useState(false);
 
   useEffect(() => {
     setUser(userData);
@@ -28,8 +30,8 @@ export default function Profile({ navigation }) {
           <Text style={styles.profile}>Perfil</Text>
         </View>
         <View style={styles.buttonContent}>
-          <TouchableOpacity><FontAwesome5 name="pen-nib" size={20} color="black" style={styles.icon} /></TouchableOpacity>
-          <TouchableOpacity><Feather name="power" size={20} color="black" style={styles.icon} /></TouchableOpacity>
+          <TouchableOpacity onPress={()=>navigation.navigate("editProfile")}><FontAwesome5 name="pen-nib" size={20} color="black" style={styles.icon} /></TouchableOpacity>
+          <TouchableOpacity onPress={()=>setVisible(!visible)}><Feather name="power" size={20} color="black" style={styles.icon} /></TouchableOpacity>
         </View>
       </View>
 
@@ -50,7 +52,7 @@ export default function Profile({ navigation }) {
       </View>
 
       <View style={styles.preferencesContainer}>
-        <TouchableOpacity style={styles.preferencesButton}>
+        <TouchableOpacity style={styles.preferencesButton} onPress={() => navigation.navigate("editPreferences")}>
           <Text>Mis Preferencias</Text>
         </TouchableOpacity>
       </View>
@@ -60,19 +62,13 @@ export default function Profile({ navigation }) {
         </View>
         <TouchableOpacity style={styles.createRecipeButton}><Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text></TouchableOpacity>
          <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <ProfileRecipeCard nickName={true} />
-          <ProfileRecipeCard nickName={false} />
-          <ProfileRecipeCard nickName={true} />
-          <ProfileRecipeCard nickName={false} />
-          <ProfileRecipeCard nickName={true} />
-          <ProfileRecipeCard nickName={false} />
-          <ProfileRecipeCard nickName={false} />
-          <ProfileRecipeCard nickName={true} />
-          <ProfileRecipeCard nickName={false} />
-          
+          {recipes.map((recipe,index) =>(
+          <ProfileRecipeCard key={index} recipe={recipe} nickName={true} />
+          ))}
         </ScrollView>
       </View>
-      <BottomBar />
+      <SesionCloseComponent visible={visible} setVisible={setVisible}/>
+      <BottomBar/>
     </SafeAreaView>
   );
 }

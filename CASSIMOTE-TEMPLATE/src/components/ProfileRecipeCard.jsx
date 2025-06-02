@@ -1,17 +1,17 @@
 import { View,StyleSheet, Text,Image,TouchableOpacity  } from "react-native";
 import StarRating from "./StarRating";
 
-export default function ProfileRecipeCard({nickName=true}){
+export default function ProfileRecipeCard({recipe,nickName=true}){
     return(
         <TouchableOpacity style={styles.container}>
             <View style={styles.imageContent}>
-                <Image style={styles.image} source={require("../assets/welcomeBackground.png")}/>
+                <Image style={styles.image} source={recipe.image}/>
             </View>
             <View style={styles.contentData}>
                 {nickName && (
-                <Text style={styles.text}>NickName</Text>
+                <Text style={styles.text}>{recipe.nickName}</Text>
                 )}
-                <Text style={styles.text}>Nombre de Receta</Text>
+                <Text style={styles.text}>{recipe.recipeName}</Text>
                 <StarRating size={18} rating={3.4}/>
             </View>
         </TouchableOpacity>

@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-
+ 
 // Simulación de datos
 const fakeResults = [
   {
@@ -16,25 +16,25 @@ const fakeResults = [
     estrellas: 5
   }
 ];
-
+ 
 export default function FilteredResultsScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const tipo = route.params?.tipo || 'usuario'; // 'usuario', 'con', 'sin'
-
+ 
   const getPlaceholders = () => {
     if (tipo === 'usuario') return 'Escribí el nombre de usuario';
     if (tipo === 'con') return 'Escribí el ingrediente que queres usar';
     if (tipo === 'sin') return 'Escribí el ingrediente que no queres usar';
     return '';
   };
-
+ 
   const getFooterText = () => {
     if (tipo === 'con') return 'Escribí los ingredientes con los que queres cocinar';
     if (tipo === 'sin') return 'Escribí los ingredientes con los que no queres cocinar';
     return null;
   };
-
+ 
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -47,7 +47,7 @@ export default function FilteredResultsScreen() {
           style={styles.input}
         />
       </View>
-
+ 
       {/* Botones de orden */}
       <View style={styles.orderButtons}>
         <TouchableOpacity style={styles.orderButton}>
@@ -59,7 +59,7 @@ export default function FilteredResultsScreen() {
           </TouchableOpacity>
         )}
       </View>
-
+ 
       {/* Resultados */}
       <FlatList
         data={fakeResults}
@@ -75,7 +75,7 @@ export default function FilteredResultsScreen() {
           </View>
         )}
       />
-
+ 
       {/* Footer (solo en filtros de ingredientes) */}
       {getFooterText() && (
         <View style={styles.footer}>
@@ -85,7 +85,7 @@ export default function FilteredResultsScreen() {
     </View>
   );
 }
-
+ 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 20 },
   header: {
@@ -139,3 +139,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+ 
