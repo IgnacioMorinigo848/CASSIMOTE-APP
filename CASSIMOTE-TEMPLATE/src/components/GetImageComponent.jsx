@@ -6,22 +6,26 @@ import * as ImagePicker from 'expo-image-picker';
 export default function GetImageComponent({ visible, setVisible, onImageSelected }) {
 
   const elegirImagen = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Se necesitan permisos para acceder a la galería');
-      return;
-    }
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status !== 'granted') {
+    alert('Se necesitan permisos para acceder a la galería');
+    return;
+  }
 
   const resultado = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaType.IMAGE,
+    mediaTypes: [ImagePicker.MediaType.Image], // ✅ corrección aquí
     allowsEditing: true,
     quality: 1,
   });
-    if (!resultado.canceled) {
-      onImageSelected(resultado.assets[0].uri); 
-       setVisible(false);
-    }
-  };
+
+  console.log("Resultado galería:", resultado); // útil para debug
+
+  if (!resultado.canceled && resultado.assets && resultado.assets.length > 0) {
+    onImageSelected(resultado.assets[0].uri); 
+    setVisible(false);
+  }
+};
+
 
   const tomarFoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();

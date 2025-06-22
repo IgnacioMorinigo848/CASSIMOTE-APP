@@ -1,50 +1,46 @@
-import { View,SafeAreaView,StyleSheet,Platform,StatusBar } from "react-native";
+import { View, SafeAreaView, StyleSheet, Platform, StatusBar } from "react-native";
 import InputComponent from '../../components/InputComponent';
 import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
-import { useState } from 'react';
 import ButtonBack from '../../components/BackButtonComponent';
+import { useStepThreeForm } from '../../hooks/USER-SERVICE/signUp/useStepThreeForm';
 
-export default function StepThree ({navigation}){
-     const [password, setPassword] = useState("");
-    const [error,setError] = useState({});
+export default function StepThree({ navigation }) {
+  const { password, setPassword, error, loading, handleSubmit } = useStepThreeForm(navigation);
 
-    const validateCode = () =>{
-        const newError={}
-        if(password.length === 0 || password.length < 8)
-            newError.password = "Contraseña invalida.";
+  const getPasswordError = () => {
+    if (error?.general == null && error?.password) {
+      return error.password;
+    }
+    return error?.general;
+  };
 
-        setError(newError);
-
-        return Object.keys(newError).length === 0;    
-    };
-
-    const handleNext =() =>{
-       if (!validateCode()) return;
-    };
-
-
-    return (
-        <SafeAreaView style={styles.container}>
-        <ButtonBack navigation={navigation} mode="reset" to="welcome" icon="x" />
-        <View style={styles.content}>
-            <TextComponent type={"title"}>Casiimote</TextComponent>
-            <TextComponent type={"subtitle"}>Para finalizar ingresá una contraseña</TextComponent>
-            <View style={styles.input}>
-            <InputComponent
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Contraseña"
-                error={error.password}
-                showValidationIcon={true}
-            />
-            </View>
-            <ButtonComponent width="65%" color={"#26355D"} onPress={handleNext}>SIGUIENTE</ButtonComponent>
-            <TextComponent type={"footer"} onPress={()=>navigation.navigate("signIn")}>Ya tenes una cuenta?</TextComponent>
+  return (
+    <SafeAreaView style={styles.container}>
+      <ButtonBack navigation={navigation} mode="reset" to="welcome" icon="x" />
+      <View style={styles.content}>
+        <TextComponent type={"title"}>Casiimote</TextComponent>
+        <TextComponent type={"subtitle"}>Para finalizar ingresá una contraseña</TextComponent>
+        <View style={styles.input}>
+          <InputComponent
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Contraseña"
+            error={getPasswordError()}
+            showValidationIcon={true}
+            secureTextEntry
+          />
         </View>
-        </SafeAreaView>
+        <ButtonComponent width="65%" color={"#26355D"} onPress={handleSubmit} disabled={loading}>
+          {loading ? "Cargando..." : "SIGUIENTE"}
+        </ButtonComponent>
+        <TextComponent type={"footer"} onPress={() => navigation.navigate("signIn")}>
+          Ya tenes una cuenta?
+        </TextComponent>
+      </View>
+    </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

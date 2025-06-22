@@ -2,32 +2,21 @@ import { View,SafeAreaView,StyleSheet,Platform,StatusBar } from "react-native";
 import InputComponent from '../../components/InputComponent';
 import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
-import { useState } from 'react';
 import ButtonBack from '../../components/BackButtonComponent';
+import { useStepThreeForm } from "../../hooks/USER-SERVICE/recoverAccount/useStepThreeForm";
 
 export default function StepThree({navigation}) {
-  const [password, setPassword] = useState("");
-  const [copyPassword, setCopyPassword] = useState("");
-  const [error,setError] = useState({});
-
-  const validate = () => {
-    const newError={}
-    if (password.length === 0 || password.length > 8) {
-      newError.password = 'Contraseña inválida.';
-    }else{
-        if(password !== copyPassword)
-            newError.copyPassword = "La contraseña no coincide.";
-    }
-
-    setError(newError);
-    return Object.keys(newError).length === 0;
-  };
-
-  const handleNext = () => {
-    if (validate()) {
-      navigation.navigate("signIn");
-    }
-  };
+ 
+  const {
+    password,
+    copyPassword,
+    setPassword,
+    setCopyPassword,
+    error,
+    loading,
+    handleSubmit,
+    getPasswordError,
+  } = useStepThreeForm(navigation);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -40,7 +29,7 @@ export default function StepThree({navigation}) {
             value={password}
             onChangeText={setPassword}
             placeholder={"Nueva contraseña"}
-            error={error.password}
+            error={getPasswordError()}
           />
           <InputComponent
             value={copyPassword}
@@ -49,7 +38,7 @@ export default function StepThree({navigation}) {
             error={error.copyPassword}
           />
         </View>
-        <ButtonComponent onPress={handleNext}>Cambiar Contraseña</ButtonComponent>
+        <ButtonComponent onPress={handleSubmit} disabled={loading}>Cambiar Contraseña</ButtonComponent>
         </View>
     </SafeAreaView>
   );

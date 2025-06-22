@@ -1,7 +1,7 @@
 import { TouchableOpacity, StyleSheet, Platform, StatusBar } from "react-native";
 import { AntDesign, Feather } from '@expo/vector-icons';
 
-export default function ButtonBack({ navigation, mode = 'goBack', to = 'Home', icon = 'arrow-left' }) {
+export default function ButtonBack({ navigation, mode = 'goBack', to = 'Home', icon = 'arrow-left',color="black" }) {
   const handlePress = () => {
     if (mode === 'reset') {
       navigation.reset({
@@ -14,8 +14,8 @@ export default function ButtonBack({ navigation, mode = 'goBack', to = 'Home', i
   };
 
   return (
-    <TouchableOpacity onPress={handlePress} style={styles.button}>
-      <Feather name={icon} size={23} color="black" />
+    <TouchableOpacity onPress={handlePress} style={[styles.button,{borderColor:color}]}>
+      <Feather name={icon} size={23} color={color} />
     </TouchableOpacity>
   );
 }
@@ -23,7 +23,6 @@ export default function ButtonBack({ navigation, mode = 'goBack', to = 'Home', i
 const styles = StyleSheet.create({
   button: {
     borderRadius: 50, 
-    borderWidth: 2,            
-    borderColor: '#000',   
+    borderWidth: 2,              
   }
 });

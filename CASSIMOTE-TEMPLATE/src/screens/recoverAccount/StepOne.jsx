@@ -2,28 +2,19 @@ import { View,SafeAreaView,StyleSheet,Platform,StatusBar } from "react-native";
 import InputComponent from '../../components/InputComponent';
 import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
-import { useState } from 'react';
 import ButtonBack from '../../components/BackButtonComponent';
+import { useStepOneForm } from "../../hooks/USER-SERVICE/recoverAccount/useStepOneForm";
 
 export default function StepOne({navigation}) {
-  const [email, setEmail] = useState("");
-  const [error,setError] = useState({});
+ 
+  const {
+    email,
+    setEmail,
+    loading,
+    handleSubmit,
+    getEmailError
+  } = useStepOneForm(navigation);
 
-  const validate = () => {
-    const newError={}
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      newError.email = 'Correo electronico invalido.';
-    }
-
-    setError(newError);
-    return Object.keys(newError).length === 0;
-  };
-
-  const handleNext = () => {
-    if (!validate()) {
-      navigation.navigate("stepTwo");
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -37,10 +28,10 @@ export default function StepOne({navigation}) {
             onChangeText={setEmail}
             placeholder="Correo electrónico"
             keyboardType="email-address"
-            error={error.email}
+            error={getEmailError()}
           />
         </View>
-        <ButtonComponent onPress={handleNext}>Recuperar Contraseña</ButtonComponent>
+        <ButtonComponent onPress={handleSubmit} disabled={loading}>Recuperar Contraseña</ButtonComponent>
       </View>
     </SafeAreaView>
   );

@@ -12,9 +12,9 @@ export default function getInitials(string) {
 
         const firstLetter = parts[0]?.[0] || '';
         const secondLetter = parts[1]?.[0] || '';
-        return firstLetter + secondLetter;
+        return firstLetter.toUpperCase() + secondLetter.toUpperCase();
     } else {
 
-        return cleanString[0];
+        return cleanString[0].toUpperCase() + cleanString[1].toUpperCase();
     }
 }

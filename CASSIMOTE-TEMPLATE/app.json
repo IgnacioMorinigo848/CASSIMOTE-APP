@@ -2,13 +2,21 @@
   "expo": {
     "name": "CASSIMOTE-APP",
     "slug": "CASSIMOTE-APP",
+    "extra": {
+      "EXPO_API_URL": "https://user-service-production-e46d.up.railway.app/user/graphql",
+      "EXPO_API_URL_RECIPE": "https://recipe-service-production-ef3b.up.railway.app/recipe/graphql",
+      "EXPO_API_URL_IMAGE": "http://image-service-production-184a.up.railway.app/graphql",
+      "eas": {
+        "projectId": "deecbeed-207d-4027-9575-b5fa049ea539"
+      }
+    },
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/loading.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/loading.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,13 +25,11 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/loading.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+      "edgeToEdgeEnabled": true,
+      "package": "com.imorinigo.CASSIMOTEAPP"
     }
   }
 }

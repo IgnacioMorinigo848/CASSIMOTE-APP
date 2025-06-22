@@ -2,28 +2,61 @@ import {
   View, Text, StyleSheet, Image, TouchableOpacity,
   SafeAreaView, StatusBar, Platform
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import BackButtonComponent from "../../components/BackButtonComponent";
 import ButtonComponent from "../../components/ButtonComponent";
 import GetImageComponent from "../../components/GetImageComponent";
-import { userData } from "../../utils/profile/data";
+import { AuthContext } from "../../context/AuthContext";
+import uploadImage from "../../api/IMAGE-SERVICE/uploadImage";
+import deleteImage from "../../api/IMAGE-SERVICE/deleteImage";
+import updateProfile from "../../api/USER-SERVICE/profile/updateProfile";
+import { useRoute } from "@react-navigation/native";
+import * as FileSystem from 'expo-file-system';
+
+const DEFAULT_IMAGE = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
 
 export default function EditProfile({ navigation }) {
   const [visible, setVisible] = useState(false);
-  const [profileImage, setProfileImage] = useState();
+  const [profileImage, setProfileImage] = useState(null);
+  const { token } = useContext(AuthContext);
+  const route = useRoute();
+
+  const image = route.params?.image;
 
   useEffect(() => {
-    setProfileImage(userData.profileImage);
+    console.log("📦 Params recibidos en EditProfile:", route.params);
+    setProfileImage({uri:image});
   }, []);
 
   const onImageSelected = async (imageUri) => {
-    const uriConTimestamp = imageUri + '?time=' + new Date().getTime();
-    console.log('Nueva imagen seleccionada:', uriConTimestamp);
-    await Image.prefetch(uriConTimestamp);
-    setProfileImage({ uri: uriConTimestamp });
+    try {
+      const base64String = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      const base64Image = `data:image/jpeg;base64,${base64String}`;
+      const imageWithTimestamp = { uri: imageUri + '?time=' + new Date().getTime() };
+
+      setProfileImage(imageWithTimestamp);
+
+      const { url } = await uploadImage(base64Image);
+      const { oldUrl } = await updateProfile(token, url);
+
+      if (oldUrl) {
+        await deleteImage(oldUrl, token);
+      }
+    } catch (error) {
+      console.error('🔴 Error al actualizar imagen:', error.message);
+    }
   };
 
-  if (!profileImage) return (<Text>Cargando</Text>);
+  if (!profileImage) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={{ textAlign: 'center', marginTop: 20 }}>Cargando imagen de perfil...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -37,9 +70,8 @@ export default function EditProfile({ navigation }) {
         <View style={styles.buttonProfileContent}>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
             <Image
-              key={profileImage.uri}
               style={styles.profileImage}
-              source={profileImage}
+              source={{ uri: typeof profileImage === 'string' ? profileImage : profileImage.uri }}
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
@@ -47,13 +79,15 @@ export default function EditProfile({ navigation }) {
           </TouchableOpacity>
         </View>
         <View style={styles.recoverAccountContent}>
-          <ButtonComponent  onPress={()=>navigation.navigate("recoverAccountFlowStackNavigator")}>Cambiar contraseña</ButtonComponent>
+          <ButtonComponent onPress={() => navigation.navigate("recoverAccountFlowStackNavigator")}>
+            Cambiar contraseña
+          </ButtonComponent>
         </View>
       </View>
       <GetImageComponent visible={visible} setVisible={setVisible} onImageSelected={onImageSelected} />
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
