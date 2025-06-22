@@ -6,8 +6,8 @@ const API_URL = Constants.expoConfig.extra.EXPO_API_URL_IMAGE;
 const uploadImage = async (base64Image) => {
   try {
     const query = `
-      mutation UploadImage($base64Image: String!) {
-        uploadImageBase64(base64Image: $base64Image) {
+      mutation uploadImage($base64Image: String!) {
+        uploadImage(base64Image: $base64Image) {
           url
         }
       }
@@ -28,7 +28,7 @@ const uploadImage = async (base64Image) => {
       }
     );
 
-    const url = response.data.data.uploadImageBase64.url;
+    const url = response.data.data.uploadImage.url;
     return { url };
   } catch (error) {
     throw new Error(error.message);

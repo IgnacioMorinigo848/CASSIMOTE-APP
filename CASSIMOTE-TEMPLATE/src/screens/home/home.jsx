@@ -2,7 +2,6 @@ import React, { useEffect, useContext } from 'react';
 import { View, SafeAreaView, ScrollView, ActivityIndicator, Text } from 'react-native';
 import styles from './styles';
 import SearchBar from '../../components/SearchBar';
-import FilterButtons from '../../components/FilterButtons';
 import SectionTitle from '../../components/SectionTitle';
 import RecipeCard from '../../components/RecipeCard';
 import CategoryCard from '../../components/CategoryCard';
@@ -34,13 +33,7 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <SearchBar />
-        <FilterButtons />
-        {appliedFilter && (
-          <Text style={styles.filterText}>
-            Filtro aplicado: <Text style={{ fontWeight: 'bold' }}>{appliedFilter}</Text>
-          </Text>
-        )}
+        <SearchBar/>
       {lastThreeRecipes?.success && (
         <>
           <SectionTitle title={lastThreeRecipes.title} />

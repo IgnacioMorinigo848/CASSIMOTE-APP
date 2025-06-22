@@ -24,7 +24,6 @@ export default function EditProfile({ navigation }) {
   const image = route.params?.image;
 
   useEffect(() => {
-    console.log("📦 Params recibidos en EditProfile:", route.params);
     setProfileImage({uri:image});
   }, []);
 
@@ -40,6 +39,7 @@ export default function EditProfile({ navigation }) {
       setProfileImage(imageWithTimestamp);
 
       const { url } = await uploadImage(base64Image);
+      console.log("url obtenida", url)
       const { oldUrl } = await updateProfile(token, url);
 
       if (oldUrl) {
@@ -69,10 +69,11 @@ export default function EditProfile({ navigation }) {
       <View style={styles.content}>
         <View style={styles.buttonProfileContent}>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
-            <Image
-              style={styles.profileImage}
-              source={{ uri: typeof profileImage === 'string' ? profileImage : profileImage.uri }}
-            />
+             {image ? (
+                <Image style={styles.profileImage} source={{uri:dataProfile.profileImage}} />
+              ) : (
+                <Text style={styles.initialsText}>{getInitials(dataProfile.nickName)}</Text>
+              )}
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
             <Text style={styles.buttonText}>Cambiar foto de perfil</Text>
@@ -135,5 +136,10 @@ const styles = StyleSheet.create({
   },
   recoverAccountContent: {
     marginTop: 30
+  },
+   initialsText: {
+    color: '#AF47D2',
+    fontSize: 18,
+    fontWeight: 'bold'
   }
 });

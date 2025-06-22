@@ -40,23 +40,8 @@ export default function StepTwo() {
     instructions: [],
   });
 
-   const onImageSelected = async (imageUri) => {
-  try {
-    const base64String = await FileSystem.readAsStringAsync(imageUri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
 
-    const base64Image = `data:image/jpeg;base64,${base64String}`;
-    
-    const { url } = await uploadImage(imageUri);
-    setImage({ uri: url });
-    
-  } catch (error) {
-    console.error('Error al actualizar imagen:', error.message);
-  }
-};
-  
-  useEffect(() => {
+   useEffect(() => {
     if (mode !== 'CREATE' && mode !== 'REPLACE' && recipe) {
       setImage({uri:recipe.image} || '');
       setDescription(recipe.description || '');
@@ -69,6 +54,22 @@ export default function StepTwo() {
       setTypeOfDish(recipe.typeOfDish || '');
     }
   }, [mode, recipe]);
+
+   const onImageSelected = async (imageUri) => {
+  try {
+    const base64String = await FileSystem.readAsStringAsync(imageUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    const base64Image = `data:image/jpeg;base64,${base64String}`;
+    const { url } = await uploadImage(base64Image);
+    console.log("nueva url", url)
+    setImage({uri: url });
+    
+  } catch (error) {
+    console.error('Error al actualizar imagen:', error.message);
+  }
+};
 
   const addIngredient = () => setIngredients([...ingredients, { name: '', quantity: '', unit: '' }]);
   const updateIngredient = (index, updated) => {
