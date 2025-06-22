@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
-const StarRating = ({size, rating }) => {
+const StarRating = ({size = 23, rating }) => {
   const stars = [];
 
   for (let i = 1; i <= 5; i++) {

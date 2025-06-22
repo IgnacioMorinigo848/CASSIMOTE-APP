@@ -8,7 +8,7 @@ export default function BottomBar() {
   return (
     <SafeAreaView edges={['bottom']} style={styles.container}>
       <View style={styles.navBar}>
-        <TouchableOpacity style={styles.navItem}>
+        <TouchableOpacity style={styles.navItem} onPress={()=>navigate("archived")}>
           <MaterialIcons name="bookmark-border" size={24} color="gray" />
           <Text style={styles.label}>Archivado</Text>
         </TouchableOpacity>

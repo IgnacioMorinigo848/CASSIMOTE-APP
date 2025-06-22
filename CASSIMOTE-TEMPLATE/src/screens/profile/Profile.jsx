@@ -1,26 +1,33 @@
-import { StyleSheet, Text, View, SafeAreaView, Platform, StatusBar, Image, TouchableOpacity,ScrollView } from "react-native";
+import { StyleSheet, Text, View, SafeAreaView, Platform, StatusBar, Image, TouchableOpacity,ScrollView,ActivityIndicator } from "react-native";
 import BottomBar from "../../components/BottonBar";
 import { FontAwesome5, Feather } from '@expo/vector-icons';
-import { useState, useEffect } from "react";
-import {userData,recipes} from "../../utils/profile/data";
+import { useState, useEffect, useContext } from "react";
 import getInitials from "../../helper/getInitials";
 import ProfileRecipeCard from "../../components/ProfileRecipeCard";
 import SesionCloseComponent from "./SesionCloseComponent";
+import { AuthContext } from '../../context/AuthContext';
+import useProfileData from "../../api/RECIPE-SERVICE/profile/profile";
+import useGetProfileData from "../../api/RECIPE-SERVICE/profile/getProfileData";
 
 export default function Profile({ navigation }) {
-  const [user, setUser] = useState(null);
+
   const [visible,setVisible] = useState(false);
+  const { token,user,logout } = useContext(AuthContext);
+  const { data, loading, error } = useProfileData(token);
+  const {dataProfile,loadingProfile, errorProfile} = useGetProfileData(token)
 
   useEffect(() => {
-    setUser(userData);
-  }, []);
+    if (!loading && data || !loadingProfile && dataProfile) console.log("🟢 HOME DATA:", data);
+    if (!loading && error || !loadingProfile && errorProfile) console.error("🔴 ERROR AL CARGAR HOME:", error);
+  }, [loading, data, error,user]);
 
-  if (!user) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text>Cargando perfil...</Text>
-      </SafeAreaView>
-    );
+  if (loading || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+
+  if (error || errorProfile) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error.message}</Text>;
+
+  const handleSesionClose = () =>{
+    logout();
+    navigation.navigate("signIn")
   }
 
   return (
@@ -30,23 +37,23 @@ export default function Profile({ navigation }) {
           <Text style={styles.profile}>Perfil</Text>
         </View>
         <View style={styles.buttonContent}>
-          <TouchableOpacity onPress={()=>navigation.navigate("editProfile")}><FontAwesome5 name="pen-nib" size={20} color="black" style={styles.icon} /></TouchableOpacity>
-          <TouchableOpacity onPress={()=>setVisible(!visible)}><Feather name="power" size={20} color="black" style={styles.icon} /></TouchableOpacity>
+          <TouchableOpacity onPress={()=>navigation.navigate("editProfile",{image:dataProfile.profileImage})}><FontAwesome5 name="pen-nib" size={20} color="black" style={styles.icon} /></TouchableOpacity>
+          <TouchableOpacity onPress={()=>{setVisible(!visible)}}><Feather name="power" size={20} color="black" style={styles.icon} /></TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.profileContainer}>
         <View style={styles.profileContent}>
           <View style={styles.imageContent}>
-            {user.profileImage ? (
-              <Image style={styles.image} source={user.profileImage} />
+            {dataProfile?.profileImage ? (
+              <Image style={styles.image} source={{uri:dataProfile.profileImage}} />
             ) : (
-              <Text style={styles.initialsText}>{getInitials(user.nickName)}</Text>
+              <Text style={styles.initialsText}>{getInitials(dataProfile.nickName)}</Text>
             )}
           </View>
           <View style={styles.dataContent}>
-            <Text style={styles.nickNameText}>{user.nickName}</Text>
-            <Text style={styles.emailText}>{user.email}</Text>
+            <Text style={styles.nickNameText}>{dataProfile.nickName}</Text>
+            <Text style={styles.emailText}>{dataProfile.email}</Text>
           </View>
         </View>
       </View>
@@ -60,14 +67,14 @@ export default function Profile({ navigation }) {
         <View style={styles.recipeTextContainer}>
           <Text style={styles.recipeText}>Mis Recetas</Text>
         </View>
-        <TouchableOpacity style={styles.createRecipeButton}><Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.createRecipeButton} onPress={()=>navigation.navigate("createRecipe")}><Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text></TouchableOpacity>
          <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {recipes.map((recipe,index) =>(
+          {data.map((recipe,index) =>(
           <ProfileRecipeCard key={index} recipe={recipe} nickName={true} />
           ))}
         </ScrollView>
       </View>
-      <SesionCloseComponent visible={visible} setVisible={setVisible}/>
+      <SesionCloseComponent visible={visible} setVisible={setVisible} handleSesionClose={()=>handleSesionClose()}/>
       <BottomBar/>
     </SafeAreaView>
   );
@@ -136,7 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   nickNameText: {
-    fontWeight: '600',
+    fontWeight: '500',
     fontSize: 18
   },
   emailText: {

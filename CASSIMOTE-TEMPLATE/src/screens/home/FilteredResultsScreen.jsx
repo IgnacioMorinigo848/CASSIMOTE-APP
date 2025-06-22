@@ -12,12 +12,12 @@ const fakeResults = [
     id: '1',
     usuario: 'Nombre de usuario',
     receta: 'Nombre de la receta',
-    imagen: require('../../assets/homeImages/latest.png'),
     estrellas: 5
   }
 ];
- 
+
 export default function FilteredResultsScreen() {
+  const imagen= require('../../assets/homeImages/latest.png')
   const navigation = useNavigation();
   const route = useRoute();
   const tipo = route.params?.tipo || 'usuario'; // 'usuario', 'con', 'sin'
@@ -66,7 +66,7 @@ export default function FilteredResultsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Image source={item.imagen} style={styles.cardImage} />
+            <Image source={imagen} style={styles.cardImage} />
             <View style={styles.cardText}>
               <Text>{item.usuario}</Text>
               <Text>{item.receta}</Text>

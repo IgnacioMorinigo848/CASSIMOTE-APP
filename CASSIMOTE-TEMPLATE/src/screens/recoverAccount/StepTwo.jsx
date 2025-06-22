@@ -2,28 +2,12 @@ import { View,SafeAreaView,StyleSheet,Platform,StatusBar } from "react-native";
 import InputComponent from '../../components/InputComponent';
 import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
-import { useState } from 'react';
 import ButtonBack from '../../components/BackButtonComponent';
+import { validateCode } from "../../hooks/USER-SERVICE/auth/validateCode"; 
 
 export default function StepTwo({navigation}) {
-  const [code, setCode] = useState("");
-  const [error,setError] = useState({});
-
-  const validate = () => {
-    const newError={}
-    if (code.length === 0 || code.length > 6) {
-      newError.code = 'Codigo inválido.';
-    }
-
-    setError(newError);
-    return Object.keys(newError).length === 0;
-  };
-
-  const handleNext = () => {
-    if (!validate()) {
-      navigation.navigate("stepThree");
-    }
-  };
+  
+  const { code, setCode, error, loading, handleSubmit, getCodeError } = validateCode(navigation);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -36,11 +20,11 @@ export default function StepTwo({navigation}) {
             value={code}
             onChangeText={setCode}
             placeholder={"Código de Correo"}
-            error={error.code}
+            error={getCodeError()}
             showValidationIcon={true}
           />
         </View>
-        <ButtonComponent onPress={handleNext}>SIGUIENTE</ButtonComponent>
+        <ButtonComponent  onPress={handleSubmit} disabled={loading}>SIGUIENTE</ButtonComponent>
         <TextComponent type={"footer"} onPress={()=>navigation.navigate("signIn")}>Ya tenes una cuenta?</TextComponent>
       </View>
     </SafeAreaView>

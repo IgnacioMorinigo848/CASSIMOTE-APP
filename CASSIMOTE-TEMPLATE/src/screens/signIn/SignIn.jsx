@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState,useContext } from "react";
 import { View, Text,SafeAreaView, StyleSheet,Platform,StatusBar  } from "react-native";
 import {ButtonComponent,ButtonBack,InputComponent,RadioButton,validateSignIn} from "./index";
+import {AuthContext} from "../../context/AuthContext"
 
 export default function SingIn({navigation}){
     const [email, setEmail] = useState("");
@@ -8,17 +9,26 @@ export default function SingIn({navigation}){
     const [password, setPassword] = useState("");
     const [error,setError] = useState({});
     const [selected, setSelected] = useState(false);
-    
+    const { login } = useContext(AuthContext);
+
     const validate = () => {
         const newError = validateSignIn({ email, nickName, password });
     setError(newError);
     return Object.keys(newError).length === 0;
     };
 
-    const handleLogin = () => {
-    if (!validate()) return ;
+    const handleLogin = async () => {
+    if (validate()){
+      const result = await login(nickName, email, password);
+        if (result.success) {
+        console.log(result.message)
+        navigation.navigate("home")
+        } else {
+          setError(result.message);
+          console.log(result.message)
+        }
+    }
     };
-    
 
     return (
         <SafeAreaView style={styles.container}>

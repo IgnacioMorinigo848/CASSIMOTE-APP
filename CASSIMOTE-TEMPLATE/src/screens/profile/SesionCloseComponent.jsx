@@ -1,6 +1,6 @@
 import { Modal, Text, View, TouchableOpacity, TouchableWithoutFeedback, StyleSheet } from "react-native";
 
-export default function SesionCloseComponent({ visible, setVisible }) {
+export default function SesionCloseComponent({ visible, setVisible,handleSesionClose }) {
   return (
     <Modal
       transparent={true}
@@ -13,7 +13,7 @@ export default function SesionCloseComponent({ visible, setVisible }) {
           <View style={styles.modalContent}>
             <Text style={styles.title}>¿Estás seguro que querés cerrar sesión?</Text>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button}>
+              <TouchableOpacity onPress={()=>{handleSesionClose(); setVisible(false);}} style={styles.button}>
                 <Text style={styles.buttonText}>SI</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.button} onPress={() => setVisible(false)}>
