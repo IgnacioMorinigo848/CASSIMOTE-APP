@@ -59,7 +59,7 @@ export default function Profile({ navigation }) {
       </View>
 
       <View style={styles.preferencesContainer}>
-        <TouchableOpacity style={styles.preferencesButton} onPress={() => navigation.navigate("editPreferences")}>
+        <TouchableOpacity style={styles.preferencesButton} onPress={() => navigation.navigate("editPreferences",{image:dataProfile.profileImage})}>
           <Text>Mis Preferencias</Text>
         </TouchableOpacity>
       </View>

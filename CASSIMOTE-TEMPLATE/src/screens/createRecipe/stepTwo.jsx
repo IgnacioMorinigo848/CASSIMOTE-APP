@@ -10,6 +10,7 @@ import GetImageComponent from '../../components/GetImageComponent';
 import loadRecipe from '../../api/RECIPE-SERVICE/createRecipe/loadRecipe';
 import { AuthContext } from '../../context/AuthContext';
 import uploadImage from '../../api/IMAGE-SERVICE/uploadImage';
+import * as FileSystem from 'expo-file-system';
 
 export default function StepTwo() {
   const navigation = useNavigation();
@@ -40,19 +41,20 @@ export default function StepTwo() {
   });
 
    const onImageSelected = async (imageUri) => {
-      try {
-        const imageWithTimestamp = { uri: imageUri};
-        setImage(imageWithTimestamp);
-  
-        const { url } = await uploadImage(imageUri);
+  try {
+    const base64String = await FileSystem.readAsStringAsync(imageUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
 
-        setImage({uri:url})
-
-      } catch (error) {
-        console.error('Error al actualizar imagen:', error.message);
-      }
-    };
-  
+    const base64Image = `data:image/jpeg;base64,${base64String}`;
+    
+    const { url } = await uploadImage(imageUri);
+    setImage({ uri: url });
+    
+  } catch (error) {
+    console.error('Error al actualizar imagen:', error.message);
+  }
+};
   
   useEffect(() => {
     if (mode !== 'CREATE' && mode !== 'REPLACE' && recipe) {

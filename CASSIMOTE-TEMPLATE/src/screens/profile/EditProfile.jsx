@@ -25,7 +25,7 @@ export default function EditProfile({ navigation }) {
 
   useEffect(() => {
     console.log("📦 Params recibidos en EditProfile:", route.params);
-    setProfileImage(image ?? DEFAULT_IMAGE);
+    setProfileImage({uri:image});
   }, []);
 
   const onImageSelected = async (imageUri) => {
