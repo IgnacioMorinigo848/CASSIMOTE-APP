@@ -12,14 +12,14 @@ import useGetProfileData from "../../api/RECIPE-SERVICE/profile/getProfileData";
 export default function Profile({ navigation }) {
 
   const [visible,setVisible] = useState(false);
-  const { token,user,logout } = useContext(AuthContext);
+  const { token,logout } = useContext(AuthContext);
   const { data, loading, error } = useProfileData(token);
   const {dataProfile,loadingProfile, errorProfile} = useGetProfileData(token)
 
   useEffect(() => {
     if (!loading && data || !loadingProfile && dataProfile) console.log("🟢 HOME DATA:", data);
     if (!loading && error || !loadingProfile && errorProfile) console.error("🔴 ERROR AL CARGAR HOME:", error);
-  }, [loading, data, error,user]);
+  }, [loading, data, error,dataProfile]);
 
   if (loading || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
 

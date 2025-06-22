@@ -8,7 +8,7 @@ import SingIn from "../screens/signIn/SignIn.jsx";
 import RecoverAccountFlowStackNavigator from "../navigation/recoverAccountFlowStackNavigator.js";
 import ProfileFlowStackNavigator from "../navigation/profileFlowStackNavigator.js";
 import SearchBar from "../screens/SearchBar/FilterScreen.jsx";
-import FilteredResultsScreen from '../screens/home/FilteredResultsScreen.jsx';
+import FilteredResultsScreen from '../screens/filter/FilteredResultsScreen.jsx';
 import RecipeDetailScreen from '../screens/Recipes/RecipeDetailScreen';
 import AddRatingScreen from "../screens/Recipes/AddRatingScreen.jsx";
 import CreateRecipeFlowStackNavigator from "./createRecipeFlowStackNavigator.js"
