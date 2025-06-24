@@ -21,7 +21,7 @@ export default function EditProfile({ navigation }) {
   const { token } = useContext(AuthContext);
   const route = useRoute();
 
-  const image = route.params?.image;
+  const {image,nickName} = route.params;
 
   useEffect(() => {
     setProfileImage({uri:image});
@@ -70,9 +70,9 @@ export default function EditProfile({ navigation }) {
         <View style={styles.buttonProfileContent}>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
              {image ? (
-                <Image style={styles.profileImage} source={{uri:dataProfile.profileImage}} />
+                <Image style={styles.profileImage} source={{uri:image}} />
               ) : (
-                <Text style={styles.initialsText}>{getInitials(dataProfile.nickName)}</Text>
+                <Text style={styles.initialsText}>{getInitials(nickName)}</Text>
               )}
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
