@@ -10,53 +10,78 @@ import Step from './Step';
 import QuantityAdjuster from './QuantityAdjuster';
 import CommentCard from "./commentCard";
 import useRecipeDetails from '../../api/RECIPE-SERVICE/recipeDetails/recipeDetails';
+import useGetDetails from "../../api/RECIPE-SERVICE/archived/getDatails";
 import useComments from '../../api/RECIPE-SERVICE/comments/comments';
 import useDeleteComment from '../../api/RECIPE-SERVICE/comments/deleteComment';
 import { calculatePortions, calculatePortionsByIngredient } from "../../utils/portions/portionCalculator";
 import ButtonBar from "../../components/BottonBar";
 import useExistInList from '../../api/RECIPE-SERVICE/archived/existRecipe';
+import prepareRecipeForSend from "../../helper/prepareRecipeForSend";
+import addRecipeToList from '../../api/RECIPE-SERVICE/archived/addToList';
+import deleteToList from "../../api/RECIPE-SERVICE/archived/deleteToList";
+import BackButtonComponent from "../../components/BackButtonComponent"
 
 export default function RecipeDetailScreen({ navigation }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState('Ingredientes');
   const route = useRoute();
-  const { id } = route.params;
+  const { id, source = "main" } = route.params ?? {};
 
   const { token } = useContext(AuthContext);
-  const { data, loading, error } = useRecipeDetails(token, id);
-  const { dataComment,loadingComment } = useComments(token, id);
-  const { dataList,loadingList, errorList } = useExistInList(token,id);
+
+  const {
+  data: recipeData,
+  loading: loadingRecipe,
+  error: errorRecipe
+} = (source === "main" || source === "profile")
+  ? useRecipeDetails(token, id)
+  : useGetDetails(token, id);
+
+   
+
+  const { dataComment, loadingComment } = useComments(token, id);
+  const { dataList } = useExistInList(token, id);
 
   const [portion, setPortion] = useState(0);
   const [ingredients, setIngredients] = useState([]);
 
-useEffect(() => {
-  if (data) {
-    setPortion(data.portions);
-    const ingredientsWithOriginal = data.ingredients.map(ing => ({
-      ...ing,
-      originalQuantity: ing.quantity
-    }));
-    setIngredients(ingredientsWithOriginal);
-    setIsFavorite(dataList?.success)
-  }
-}, [data,loadingComment,dataComment]);
-
-  if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
-  if (error) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error.message}</Text>;
-
-  const handleList = () =>{
-    if(isFavorite){
-      
-    }else{
-      
+  useEffect(() => {
+    if (recipeData) {
+      setPortion(recipeData.portions);
+      const ingredientsWithOriginal = recipeData.ingredients.map(ing => ({
+        ...ing,
+        originalQuantity: ing.quantity
+      }));
+      setIngredients(ingredientsWithOriginal);
+      setIsFavorite(dataList?.success);
     }
+  }, [recipeData, loadingComment, dataComment]);
 
-    setIsFavorite(!isFavorite);
+  if (loadingRecipe) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+  if (errorRecipe) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {errorRecipe}</Text>;
+
+  const handleList = async () => {
+    try {
+      let response;
+      if (!isFavorite) {
+        const recipe = prepareRecipeForSend(recipeData, ingredients, portion);
+        response = await addRecipeToList(token, recipe);
+      } else {
+        response = await deleteToList(token, id);
+      }
+
+      if (response?.success) {
+        setIsFavorite(!isFavorite);
+      } else {
+        alert(response?.message || "No se pudo actualizar la lista.");
+      }
+    } catch (error) {
+      alert("Error al actualizar favoritos: " + error.message);
+    }
   };
 
   const updatePortion = (newPortion) => {
-    const result = calculatePortions(data.portions, newPortion, ingredients);
+    const result = calculatePortions(recipeData.portions, newPortion, ingredients);
     if (result.success) {
       setPortion(result.data.newPortions);
       setIngredients(result.data.ingredients);
@@ -64,7 +89,7 @@ useEffect(() => {
   };
 
   const updateByIngredient = (index, newQuantity) => {
-    const result = calculatePortionsByIngredient(data.portions, newQuantity, ingredients, ingredients[index].name);
+    const result = calculatePortionsByIngredient(recipeData.portions, newQuantity, ingredients, ingredients[index].name);
     if (result.success) {
       setPortion(result.data.newPortions);
       setIngredients(result.data.ingredients);
@@ -74,34 +99,30 @@ useEffect(() => {
   const handleDeleteComment = async (commentId) => {
     try {
       await useDeleteComment(token, commentId);
-      navigation.replace("RecipeDetail", { id });
+      navigation.replace("RecipeDetail", { id, source });
     } catch (error) {
       alert('Error al eliminar la valoración: ' + error.message);
     }
   };
 
-  if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
-  if (error) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error.message}</Text>;
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
+        <BackButtonComponent navigation={navigation} mode='goBack'/>
+        <Image source={{ uri: recipeData.image }} style={styles.image} />
 
-        <Image source={{ uri: data.image }} style={styles.image} />
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="white" />
-        </TouchableOpacity>
 
         <View style={styles.starsRow}>
           {[...Array(5)].map((_, i) => (
             <Ionicons
               key={i}
-              name={i < data.numberOfStart ? 'star' : 'star-outline'}
+              name={i < recipeData.numberOfStart ? 'star' : 'star-outline'}
               size={24}
               color="gold"
             />
           ))}
-          <TouchableOpacity onPress={() => handleList}>
+          { source !== "profile" &&
+          <TouchableOpacity onPress={() => handleList()}>
             <Ionicons
               name={isFavorite ? 'bookmark' : 'bookmark-outline'}
               size={24}
@@ -109,14 +130,12 @@ useEffect(() => {
               style={{ marginLeft: 10 }}
             />
           </TouchableOpacity>
+          }
         </View>
-
-        <Text style={styles.recipeTitle}>{data.name}</Text>
-
         <View style={styles.infoRow}>
-          <Text>🛒 {data.ingredients.length}</Text>
-          <Text>💪 {data.difficulty}</Text>
-          <Text>⏰ {data.time}</Text>
+          <Text>🛒 {recipeData.ingredients.length}</Text>
+          <Text>💪 {recipeData.difficulty}</Text>
+          <Text>⏰ {recipeData.time}</Text>
         </View>
 
         <View style={styles.tabsRow}>
@@ -139,6 +158,7 @@ useEffect(() => {
                 value={portion}
                 unit="Porciones"
                 onChange={(num) => updatePortion(portion + num)}
+                disguise={source}
               />
             </View>
 
@@ -153,28 +173,29 @@ useEffect(() => {
                   value={item.quantity}
                   unit={item.unit}
                   onChange={(num) => updateByIngredient(index, item.quantity + num)}
+                  disguise={source}
                 />
               </View>
             ))}
           </>
         ) : (
           <View style={{ padding: 10 }}>
-            {data.steps.map((step, i) => (
+            {recipeData.steps.map((step, i) => (
               <Step key={i} number={i + 1} text={step.description} />
             ))}
           </View>
         )}
 
-      {dataComment && (
-  (dataComment.success && !dataComment.userHasVoted) || (!dataComment.success) ? (
-    <TouchableOpacity
-      style={styles.ratingButton}
-      onPress={() => navigation.navigate('AddRating', { id })}
-    >
-      <Text style={{ color: 'white' }}>Agrega tu valoración de la receta</Text>
-    </TouchableOpacity>
-  ) : null
-)}
+        {dataComment && (
+          (dataComment.success && !dataComment.userHasVoted) || (!dataComment.success) ? (
+            <TouchableOpacity
+              style={styles.ratingButton}
+              onPress={() => navigation.navigate('AddRating', { id })}
+            >
+              <Text style={{ color: 'white' }}>Agrega tu valoración de la receta</Text>
+            </TouchableOpacity>
+          ) : null
+        )}
 
         {dataComment?.success ? (
           dataComment.votes.map((c, index) => {

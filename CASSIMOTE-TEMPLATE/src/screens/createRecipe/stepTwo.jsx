@@ -11,12 +11,13 @@ import loadRecipe from '../../api/RECIPE-SERVICE/createRecipe/loadRecipe';
 import { AuthContext } from '../../context/AuthContext';
 import uploadImage from '../../api/IMAGE-SERVICE/uploadImage';
 import * as FileSystem from 'expo-file-system';
+import existNameForUpdate from '../../api/RECIPE-SERVICE/createRecipe/existNameForUpdate';
 
 export default function StepTwo() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { mode = 'CREATE', recipe } = route.params || {};
-
+  const { mode = 'CREATE', recipe,activate=false,id="" } = route.params || {};
+  const [name, setName] = useState("");
   const [description, setDescription] = useState('');
   const [portions, setPortions] = useState(1);
   const [ingredients, setIngredients] = useState([{ name: '', quantity: '', unit: '' }]);
@@ -31,6 +32,7 @@ export default function StepTwo() {
   const { token } = useContext(AuthContext);
 
   const [fieldErrors, setFieldErrors] = useState({
+    name:"",
     image:"",
     description: '',
     diet: '',
@@ -40,9 +42,18 @@ export default function StepTwo() {
     instructions: [],
   });
 
+  const verifyName = async () =>{
+    const result = await existNameForUpdate(id,name.trim(),token);
+    if(result?.success){
+      let message = result?.message;
+      console.log(message)
+      return message;
+    }
+  };
 
    useEffect(() => {
     if (mode !== 'CREATE' && mode !== 'REPLACE' && recipe) {
+      setName(recipe.name || "");
       setImage({uri:recipe.image} || '');
       setDescription(recipe.description || '');
       setPortions(recipe.portions || 1);
@@ -99,8 +110,9 @@ export default function StepTwo() {
     await loadRecipe(commonData,option,token);
   };
 
-  const validarYContinuar = () => {
+  const validarYContinuar = async () => {
     const newErrors = {
+      name:"",
       image:"",
       description: '',
       diet: '',
@@ -110,6 +122,19 @@ export default function StepTwo() {
       instructions: [],
     };
     let hasError = false;
+
+    if(activate){
+      const response = await verifyName();
+      if(response){
+        console.log(response)
+        newErrors.name = response;
+        hasError=true;
+      }
+      if(!name){
+        newErrors.name = "El name es obligatoria";
+        hasError=true;
+      }
+    }
 
     if(!image){
       newErrors.image = "Se debe seleccionar una imagen";
@@ -207,6 +232,11 @@ export default function StepTwo() {
         </TouchableOpacity>
       )}
       <GetImageComponent visible={showImagePicker} setVisible={setShowImagePicker} onImageSelected={onImageSelected} />
+
+      {activate && <><Text style={styles.label}>Nombre</Text>
+      <InputField placeholder="Nombre brevemente el plato" value={name} onChangeText={setName} />
+      {fieldErrors.name && <Text style={styles.error}>{fieldErrors.name}</Text>}
+    </>}
 
       <Text style={styles.label}>Descripción</Text>
       <InputField placeholder="Describe brevemente el plato" value={description} onChangeText={setDescription} />

@@ -8,6 +8,7 @@ import SesionCloseComponent from "./SesionCloseComponent";
 import { AuthContext } from '../../context/AuthContext';
 import useProfileData from "../../api/RECIPE-SERVICE/profile/profile";
 import useGetProfileData from "../../api/RECIPE-SERVICE/profile/getProfileData";
+import existName from "../../api/RECIPE-SERVICE/createRecipe/existName";
 
 export default function Profile({ navigation }) {
 
@@ -15,6 +16,7 @@ export default function Profile({ navigation }) {
   const { token,logout } = useContext(AuthContext);
   const { data, loading, error } = useProfileData(token);
   const {dataProfile,loadingProfile, errorProfile} = useGetProfileData(token)
+  const [recipeData, setRecipeData] = useState(null); 
 
   useEffect(() => {
     if (!loading && data || !loadingProfile && dataProfile) console.log("🟢 HOME DATA:", data);
@@ -27,8 +29,33 @@ export default function Profile({ navigation }) {
 
   const handleSesionClose = () =>{
     logout();
-    navigation.navigate("signIn")
+    navigation.reset({
+        index: 0,
+        routes: [{ name: "signIn" }]})
   }
+
+  const handleDelete = async (recipeId) => {
+      
+    };
+
+  const handleEdit = async (name) =>{
+     try {
+      const result = await existName(name.trim(), token);
+      console.log("Resultado de existName:", result);
+      setRecipeData(result.recipe);
+        navigation.navigate('createRecipe', {
+      screen: 'stepTwo',
+      params: {
+        mode: 'UPDATE',
+        recipe: result.recipe,
+        activate:true,
+        id:result.recipe?._id
+      }
+    });
+    } catch (e) {
+      setError(e.message);
+  };
+};
 
   return (
     <SafeAreaView style={styles.container}>
@@ -70,7 +97,15 @@ export default function Profile({ navigation }) {
         <TouchableOpacity style={styles.createRecipeButton} onPress={()=>navigation.navigate("createRecipe")}><Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text></TouchableOpacity>
          <ScrollView contentContainerStyle={styles.scrollContainer}>
           {data.map((recipe,index) =>(
-          <ProfileRecipeCard key={index} recipe={recipe} nickName={true} />
+          <ProfileRecipeCard
+              recipe={recipe}
+              showDelete={true}
+              showEdit={true}
+              onDelete={() => handleDelete(index._id)}
+              onEdit={() => handleEdit(recipe.name)}
+              navigation={navigation}
+              source={"profile"}
+           />
           ))}
         </ScrollView>
       </View>
