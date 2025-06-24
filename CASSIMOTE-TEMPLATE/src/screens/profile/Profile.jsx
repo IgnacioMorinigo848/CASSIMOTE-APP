@@ -88,7 +88,7 @@ export default function Profile({ navigation }) {
           <Text style={styles.profile}>Perfil</Text>
         </View>
         <View style={styles.buttonContent}>
-          <TouchableOpacity onPress={() => navigation.navigate("editProfile", { image: dataProfile.profileImage })}>
+          <TouchableOpacity onPress={() => navigation.navigate("editProfile", {image: dataProfile.profileImage,nickName:dataProfile.nickName })}>
             <FontAwesome5 name="pen-nib" size={20} color="black" style={styles.icon} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { setVisible(!visible) }}>
