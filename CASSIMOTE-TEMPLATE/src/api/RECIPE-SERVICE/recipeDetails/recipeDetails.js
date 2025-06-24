@@ -96,7 +96,7 @@ const useRecipeDetails = (token,id) => {
     fetchData();
   }, [token]);
 
-  return { data, isSuccess, loading, error };
+  return { data, loading, error };
 };
 
 export default useRecipeDetails;

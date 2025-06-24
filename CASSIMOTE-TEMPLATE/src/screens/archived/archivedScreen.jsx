@@ -1,61 +1,75 @@
-import { View, Text, FlatList, StyleSheet, Platform,SafeAreaView,StatusBar } from 'react-native';
-import { useState } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  ActivityIndicator,
+} from 'react-native';
+import { useContext, useEffect, useState } from 'react';
 import ProfileRecipeCard from '../../components/ProfileRecipeCard';
-import ButtonBar from "../../components/BottonBar"
+import ButtonBar from "../../components/BottonBar";
+import { AuthContext } from '../../context/AuthContext';
+import useGetList from '../../api/RECIPE-SERVICE/archived/getList';
+import deleteToList from '../../api/RECIPE-SERVICE/archived/deleteToList';
 
-const ArchivedScreen = () => {
-  const [recipes, setRecipes] = useState([
-  {
-    id: "1",
-    image: "https://res.cloudinary.com/dtegf9t0m/image/upload/v1744525666/your-folder-name/zy83quf1d1qbfpu4dkeg.jpg" ,
-    name: "Ensalada César",
-    nickName: "nacho"
-  },
-  {
-    id: "2",
-    image: "https://res.cloudinary.com/dtegf9t0m/image/upload/v1744525666/your-folder-name/zy83quf1d1qbfpu4dkeg.jpg" ,
-    name: "Pizza Casera",
-    nickName: "tomas"
+const ArchivedScreen = ({navigation}) => {
+  const { token } = useContext(AuthContext);
+  const { data, loading, error } = useGetList(token);
+  const [recipes, setRecipes] = useState([]);
+
+  useEffect(() => {
+    if (!loading && data?.recipes) {
+      console.log("🟢 archivado DATA:", data);
+      setRecipes(data.recipes);
+    }
+    if (!loading && error) {
+      console.error("🔴 ERROR AL CARGAR archivado:", error);
+    }
+  }, [loading, data, error]);
+
+  const handleDelete = async (recipeId) => {
+    const result = await deleteToList(token, recipeId);
+    if (result?.success) {
+      setRecipes(prev => prev.filter(r => r.recipeId !== recipeId));
+    } else {
+      console.error("🔴 Error al eliminar receta archivada");
+    }
+  };
+
+  if (loading) {
+    return <ActivityIndicator size="large" style={{ flex: 1 }} />;
   }
-]);
-
-
-  const handleDelete = (recipeToDelete) => {
-    const updated = recipes.filter(recipe => recipe.id !== recipeToDelete.id);
-    setRecipes(updated);
-  };
-
-  const handleEdit = (recipeToEdit) => {
-    console.log('Editar receta:', recipeToEdit);
-    // Lógica para redirigir al formulario o modal de edición
-  };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-            <Text style={styles.header}>Mis Recetas Archivadas</Text>
-            {recipes.length === 0 ? (
-            <Text style={styles.emptyMessage}>
-                Guarda aquí todas las recetas que queres probar en algún momento
-            </Text>
-            ) : (
-            <FlatList
-                data={recipes}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                <ProfileRecipeCard
-                    recipe={item}
-                    showEdit={true}
-                    showDelete={true}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-            />
-
-             )}
-            />
+        <Text style={styles.header}>Mis Recetas Archivadas</Text>
+        {recipes.length === 0 ? (
+          <Text style={styles.emptyMessage}>
+            Guarda aquí todas las recetas que queres probar en algún momento
+          </Text>
+        ) : (
+          <FlatList
+            data={recipes}
+            keyExtractor={(item) => item.recipeId}
+            renderItem={({ item }) => (
+              <ProfileRecipeCard
+                key={item._id}
+                recipe={item}
+                nickName={true}
+                showDelete={true}
+                onDelete={() => handleDelete(item.recipeId)}
+                navigation={navigation}
+                source={"archived"}
+              />
             )}
+          />
+        )}
       </View>
-      <ButtonBar/>
+      <ButtonBar />
     </SafeAreaView>
   );
 };
@@ -69,21 +83,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-    flex:1,
+    flex: 1,
     width: '90%',
   },
   header: {
     fontWeight: 'bold',
     fontSize: 16,
     marginHorizontal: 10,
-    marginBottom: 10
+    marginBottom: 10,
   },
   emptyMessage: {
     textAlign: 'center',
     color: '#555',
     marginTop: 50,
-    paddingHorizontal: 20
-  }
+    paddingHorizontal: 20,
+  },
 });
 
 export default ArchivedScreen;

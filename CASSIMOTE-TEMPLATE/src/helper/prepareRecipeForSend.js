@@ -1,4 +1,5 @@
-export default function prepareRecipeForSend(data, ingredients, portions) {
+
+export default function prepareRecipeForSend(data, ingredients, portion) {
   if (!data || !ingredients || !Array.isArray(ingredients)) {
     throw new Error("Datos incompletos para construir la receta.");
   }
@@ -10,7 +11,7 @@ export default function prepareRecipeForSend(data, ingredients, portions) {
   }));
 
   const recipeToSend = {
-    _id: data._id,
+    recipeId: data._id || data.recipeId, 
     name: data.name,
     image: data.image,
     description: data.description,
@@ -19,7 +20,7 @@ export default function prepareRecipeForSend(data, ingredients, portions) {
     typeOfDish: data.typeOfDish,
     difficulty: data.difficulty,
     typeOfDiet: data.typeOfDiet,
-    portions: portions,
+    portions: portion,
     time: data.time,
     numberOfStart: data.numberOfStart || 0,
   };

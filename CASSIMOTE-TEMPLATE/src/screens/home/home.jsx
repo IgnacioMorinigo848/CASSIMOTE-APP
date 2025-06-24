@@ -8,14 +8,11 @@ import CategoryCard from '../../components/CategoryCard';
 import BottomBar from '../../components/BottonBar';
 import useHomeData from '../../api/RECIPE-SERVICE/home/home';
 import { AuthContext } from '../../context/AuthContext';
-import { useNavigation, useRoute } from '@react-navigation/native';
 
 export default function Home() {
   const { token } = useContext(AuthContext);
   console.log("token desde el home:", token)
   const { data, loading, error } = useHomeData(token);
-  const route = useRoute();
-  const appliedFilter = route.params?.filter;
 
   useEffect(() => {
     if (!loading && data) console.log("🟢 HOME DATA:", data);

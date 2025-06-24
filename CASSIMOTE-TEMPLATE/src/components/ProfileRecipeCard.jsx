@@ -2,26 +2,26 @@ import { View, StyleSheet, Text, Image, TouchableOpacity } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
 import StarRating from "./StarRating";
 
-export default function ProfileRecipeCard({ recipe, nickName = false, showEdit = false, showDelete = true, onEdit, onDelete }) {
+export default function ProfileRecipeCard({recipe, nickName = false, showEdit = false, showDelete = true, onEdit, onDelete,navigation,source }) {
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={()=>navigation.navigate("RecipeDetail",{id:recipe.recipeId || recipe._id,source})}>
       <View style={styles.imageContent}>
         <Image style={styles.image} source={{uri:recipe.image}} />
       </View>
       <View style={styles.contentData}>
         {nickName && <Text style={styles.text}>{recipe.nickName}</Text>}
         <Text style={styles.text}>{recipe.name}</Text>
-        <StarRating size={18} rating={3.4} />
+        <StarRating size={18} rating={recipe.numberOfStart} />
 
         <View style={styles.actions}>
           {showEdit && (
-            <TouchableOpacity style={styles.button} onPress={() => onEdit?.(recipe)}>
+            <TouchableOpacity style={styles.button} onPress={() => onEdit()}>
               <MaterialIcons name="edit" size={20} color="black" />
               <Text style={styles.editText}>Editar receta</Text>
             </TouchableOpacity>
           )}
           {showDelete && (
-            <TouchableOpacity style={styles.button} onPress={() => onDelete?.(recipe)}>
+            <TouchableOpacity style={styles.button} onPress={() => onDelete()}>
               <MaterialIcons name="delete" size={20} color="black" />
               <Text style={styles.deleteText}>Eliminar</Text>
             </TouchableOpacity>
