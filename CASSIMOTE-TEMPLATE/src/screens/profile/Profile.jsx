@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View, SafeAreaView, Platform, StatusBar, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { StyleSheet, Text, View, SafeAreaView, Platform, StatusBar, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, PanResponder } from "react-native";
 import BottomBar from "../../components/BottonBar";
 import { FontAwesome5, Feather } from '@expo/vector-icons';
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import getInitials from "../../helper/getInitials";
 import ProfileRecipeCard from "../../components/ProfileRecipeCard";
 import SesionCloseComponent from "./SesionCloseComponent";
@@ -26,8 +26,32 @@ export default function Profile({ navigation }) {
     if (error || errorProfile) console.error("🔴 ERROR AL CARGAR HOME:", error || errorProfile);
   }, [loading, data, error, dataProfile]);
 
-  if (loading || loadingProfile || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
-  if (error || errorProfile) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error?.message || errorProfile?.message}</Text>;
+
+  const twoFingerTouch = useRef(false);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt) => {
+        if (evt.nativeEvent.touches.length === 4) {
+          twoFingerTouch.current = true;
+          return true;
+        }
+        return false;
+      },
+      onPanResponderRelease: () => {
+        if (twoFingerTouch.current) {
+          twoFingerTouch.current = false;
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "approver" }],
+          });
+        }
+      },
+      onPanResponderTerminate: () => {
+        twoFingerTouch.current = false;
+      }
+    })
+  );
 
   const handleSesionClose = () => {
     logout();
@@ -81,14 +105,20 @@ export default function Profile({ navigation }) {
     }
   };
 
+  if (loading || loadingProfile || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+  if (error || errorProfile) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error?.message || errorProfile?.message}</Text>;
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={styles.container}
+      {...panResponder.current.panHandlers}  // Aquí aplicamos los handlers del gesto
+    >
       <View style={styles.topBarContainer}>
         <View style={styles.profileBarContent}>
           <Text style={styles.profile}>Perfil</Text>
         </View>
         <View style={styles.buttonContent}>
-          <TouchableOpacity onPress={() => navigation.navigate("editProfile", {image: dataProfile.profileImage,nickName:dataProfile.nickName })}>
+          <TouchableOpacity onPress={() => navigation.navigate("editProfile", { image: dataProfile.profileImage, nickName: dataProfile.nickName })}>
             <FontAwesome5 name="pen-nib" size={20} color="black" style={styles.icon} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { setVisible(!visible) }}>
@@ -127,7 +157,7 @@ export default function Profile({ navigation }) {
           <Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text>
         </TouchableOpacity>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {recipeData.map((recipe, index) => (
+          {recipeData.map((recipe) => (
             <ProfileRecipeCard
               key={recipe._id}
               recipe={recipe}
@@ -254,10 +284,9 @@ const styles = StyleSheet.create({
   },
   buttonTextCreateRecipe: {
     fontWeight: "300",
-    fontSize: 15
+    fontSize: 18,
   },
   scrollContainer: {
-    width: "100%",
-    paddingBottom: 110
+    alignItems: "center",
   }
 });
