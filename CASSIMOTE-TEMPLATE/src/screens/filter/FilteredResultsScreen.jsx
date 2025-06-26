@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FilteredResult from '../filter/FilteredResult';
+import SearchBar from '../../components/SearchBar'; // Importamos el nuevo componente SearchBar
 
 const filters = [
   'Nombre de Usuario',
@@ -38,16 +39,25 @@ const FilteredResultScreen = () => {
     }
   }, [route.params]);
 
+  // Función para manejar el botón de retroceso o limpiar la búsqueda
   const handleBack = () => {
     if (fromHome) {
-      navigation.goBack(); // vuelve al Home
+      navigation.goBack(); // vuelve al Home si viene de allí
     } else {
-      setSelected(null);
-      setSearchTerm('');
-      setSearchExecuted(false);
+      setSelected(null); // Deselecciona el filtro
+      setSearchTerm(''); // Limpia el término de búsqueda
+      setSearchExecuted(false); // Resetea la ejecución de búsqueda
     }
   };
 
+  // Función para manejar la acción de búsqueda
+  const handleSearch = () => {
+    if (searchTerm.trim() !== '') {
+      setSearchExecuted(true);
+    }
+  };
+
+  // Determina el placeholder según el filtro seleccionado
   const getPlaceholder = () => {
     switch (filters[selected]) {
       case 'Nombre de Usuario':
@@ -74,31 +84,17 @@ const FilteredResultScreen = () => {
             <TouchableOpacity onPress={handleBack}>
               <Ionicons name="arrow-back-circle-outline" size={24} color="#999" />
             </TouchableOpacity>
-            <TextInput
-              placeholder={getPlaceholder()}
-              placeholderTextColor="#aaa"
-              style={styles.searchInput}
+            {/* Integración del componente SearchBar */}
+            <SearchBar
               value={searchTerm}
               onChangeText={(text) => {
                 setSearchTerm(text);
                 setSearchExecuted(false);
               }}
-              returnKeyType="search"
-              onSubmitEditing={() => {
-                if (searchTerm.trim() !== '') {
-                  setSearchExecuted(true);
-                }
-              }}
+              onSubmit={handleSearch}
+              onFilterPress={() => navigation.navigate('filteredResults', { tipo: 'usuario' })} // Al presionar el ícono de filtro, volvemos a la selección de filtros
+              customPlaceholder={getPlaceholder()} // Pasamos el placeholder dinámico
             />
-            <TouchableOpacity
-              onPress={() => {
-                if (searchTerm.trim() !== '') {
-                  setSearchExecuted(true);
-                }
-              }}
-            >
-              <Ionicons name="search" size={24} color="#444" />
-            </TouchableOpacity>
           </View>
         ) : (
           <Text style={styles.headerText}>Selecciona el filtro para empezar</Text>
@@ -152,12 +148,7 @@ const styles = StyleSheet.create({
   inlineSearchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  searchInput: {
-    marginLeft: 10,
-    flex: 1,
-    fontSize: 15,
-    color: '#333',
+    flex: 1, // Permite que ocupe el espacio restante
   },
   optionContainer: {
     flexDirection: 'row',
