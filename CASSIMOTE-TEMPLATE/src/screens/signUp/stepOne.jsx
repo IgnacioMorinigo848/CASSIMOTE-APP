@@ -1,21 +1,40 @@
-import { View, SafeAreaView, StyleSheet, Platform, StatusBar } from "react-native";
+import { View, SafeAreaView, StyleSheet, Platform, StatusBar, TouchableOpacity } from "react-native";
 import InputComponent from '../../components/InputComponent';
 import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import ButtonBack from '../../components/BackButtonComponent';
 import { useStepOneForm } from "../../hooks/USER-SERVICE/signUp/useStepOneForm";
+import { useNicknameSuggestions } from "../../hooks/USER-SERVICE/signUp/nicknameSuggestions";
+import { useEffect } from "react";
 
 export default function StepOne({ navigation }) {
   const {
     email,
     nickName,
+    exist,
     setEmail,
     setNickName,
+    setExist,
     error,
     loading,
     handleSubmit,
     getEmailError
   } = useStepOneForm(navigation);
+
+  const {
+    suggestions,
+    loadingSuggestions,
+    fetchSuggestions
+  } = useNicknameSuggestions();
+
+  // Buscar sugerencias si existe nickname
+  useEffect(() => {
+    if (exist && nickName.trim().length > 0) {
+      fetchSuggestions(nickName);
+    }
+    if(exist && nickName.trim().length === 0)
+      setExist(!exist)
+  }, [exist, nickName]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -43,6 +62,21 @@ export default function StepOne({ navigation }) {
             error={error?.nickName}
             showValidationIcon
           />
+
+          {exist && suggestions.length > 0 && (
+            <View style={styles.suggestions}>
+              <TextComponent type="info">Alias no disponible. Sugerencias:</TextComponent>
+              {suggestions.map((sug, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={() => setNickName(sug)}
+                  style={styles.suggestionItem}
+                >
+                  <TextComponent>{sug}</TextComponent>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         <ButtonComponent width="65%" color="#26355D" onPress={handleSubmit} disabled={loading}>
@@ -73,11 +107,17 @@ const styles = StyleSheet.create({
   },
   input: {
     marginTop: "2%",
+    gap: 10,
   },
-  title: {
-    color: "#000",
-    fontSize: 30,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  suggestions: {
+    marginTop: 10,
+    paddingHorizontal: 10,
   },
+  suggestionItem: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: "#eee",
+    borderRadius: 8,
+    marginVertical: 4,
+  }
 });
