@@ -1,16 +1,16 @@
+// ... tus imports
 import React, { useState, useEffect } from 'react';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FilteredResult from '../filter/FilteredResult';
-import SearchBar from '../../components/SearchBar'; // Asegúrate de que la ruta sea correcta si es diferente
+import SearchBar from '../../components/SearchBar';
 
 const filters = [
   'Nombre de Usuario',
@@ -26,42 +26,65 @@ const FilteredResultScreen = () => {
   const [searchExecuted, setSearchExecuted] = useState(false);
   const [fromHome, setFromHome] = useState(false);
 
+  const [orderBy, setOrderBy] = useState(null);
+  const [orderDirection, setOrderDirection] = useState('asc');
+
   const route = useRoute();
   const navigation = useNavigation();
 
+  // ⬇️ Devuelve las opciones de orden según filtro seleccionado
+  const getOrderOptions = () => {
+    switch (filters[selected]) {
+      case 'Nombre de Receta':
+        return ['date', 'nickname', 'name'];
+      case 'Tipo (Carne, Pasta)':
+      case 'Con estos Ingredientes':
+      case 'Sin estos ingredientes':
+        return ['name', 'date', 'nickname'];
+      case 'Nombre de Usuario':
+        return ['name', 'date'];
+      default:
+        return [];
+    }
+  };
+
   useEffect(() => {
-    const { fromHome, query, selectedFilter } = route.params || {};
+    const { fromHome, query, selectedFilter, orderBy, orderDirection } = route.params || {};
     if (fromHome && query && selectedFilter !== undefined) {
       setSelected(selectedFilter);
       setSearchTerm(query);
       setSearchExecuted(true);
-      setFromHome(true); // Guardamos el origen
+      setFromHome(true);
+      setOrderBy(orderBy || 'name');
+      setOrderDirection(orderDirection || 'asc');
     }
   }, [route.params]);
 
-  // Función para manejar el botón de retroceso o limpiar la búsqueda
-  // Esta función ahora también se usará para volver a la selección de filtros
+  // 🧠 Lógica para definir ordenamiento por defecto
+  useEffect(() => {
+    if (selected !== null) {
+      const defaultOrder = filters[selected] === 'Nombre de Receta' ? 'date' : 'name';
+      setOrderBy(defaultOrder);
+      setOrderDirection('asc');
+    }
+  }, [selected]);
+
   const handleBack = () => {
     if (fromHome) {
-      // Si venimos del Home, volvemos al Home
-      navigation.goBack(); 
+      navigation.goBack();
     } else {
-      // Si estamos en la pantalla de resultados de filtro, deseleccionamos el filtro
-      // y reseteamos la búsqueda para mostrar la lista de filtros
-      setSelected(null); 
-      setSearchTerm(''); 
-      setSearchExecuted(false); 
+      setSelected(null);
+      setSearchTerm('');
+      setSearchExecuted(false);
     }
   };
 
-  // Función para manejar la acción de búsqueda
   const handleSearch = () => {
     if (searchTerm.trim() !== '') {
       setSearchExecuted(true);
     }
   };
 
-  // Determina el placeholder según el filtro seleccionado
   const getPlaceholder = () => {
     switch (filters[selected]) {
       case 'Nombre de Usuario':
@@ -79,17 +102,50 @@ const FilteredResultScreen = () => {
     }
   };
 
+  const toggleOrder = (newOrderBy) => {
+    if (orderBy === newOrderBy) {
+      setOrderDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setOrderBy(newOrderBy);
+      setOrderDirection('asc');
+    }
+    setSearchExecuted(true); // fuerza re-fetch en FilteredResult
+  };
+
+  const renderOrderButtons = () => {
+    const options = getOrderOptions();
+    return (
+      <View style={{ gap: 10 }}>
+        {options.includes('date') && (
+          <TouchableOpacity style={styles.sortButton} onPress={() => toggleOrder('date')}>
+            <Ionicons name="time-outline" size={18} color="#888" />
+            <Text style={styles.sortText}>Ordenar por antigüedad ({orderBy === 'date' ? (orderDirection === 'asc' ? '↑' : '↓') : ''})</Text>
+          </TouchableOpacity>
+        )}
+        {options.includes('nickname') && (
+          <TouchableOpacity style={styles.sortButton} onPress={() => toggleOrder('nickname')}>
+            <Ionicons name="person-outline" size={18} color="#888" />
+            <Text style={styles.sortText}>Ordenar por usuario ({orderBy === 'nickname' ? (orderDirection === 'asc' ? '↑' : '↓') : ''})</Text>
+          </TouchableOpacity>
+        )}
+        {options.includes('name') && (
+          <TouchableOpacity style={styles.sortButton} onPress={() => toggleOrder('name')}>
+            <Ionicons name="book-outline" size={18} color="#888" />
+            <Text style={styles.sortText}>Ordenar por nombre de receta ({orderBy === 'name' ? (orderDirection === 'asc' ? '↑' : '↓') : ''})</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Barra superior dinámica */}
       <View style={styles.headerButton}>
         {selected !== null ? (
           <View style={styles.inlineSearchBar}>
-            {/* Botón de retroceso general para la pantalla de búsqueda */}
             <TouchableOpacity onPress={handleBack}>
               <Ionicons name="arrow-back-circle-outline" size={24} color="#999" />
             </TouchableOpacity>
-            {/* Integración del componente SearchBar */}
             <SearchBar
               value={searchTerm}
               onChangeText={(text) => {
@@ -97,9 +153,8 @@ const FilteredResultScreen = () => {
                 setSearchExecuted(false);
               }}
               onSubmit={handleSearch}
-
-              onFilterPress={handleBack} 
-              customPlaceholder={getPlaceholder()} // Pasamos el placeholder dinámico
+              onFilterPress={handleBack}
+              customPlaceholder={getPlaceholder()}
             />
           </View>
         ) : (
@@ -120,11 +175,16 @@ const FilteredResultScreen = () => {
           </TouchableOpacity>
         ))}
 
-      {/* Resultados */}
+      {/* Botones de ordenamiento */}
+      {selected !== null && renderOrderButtons()}
+
+      {/* Resultados con ordenamiento */}
       <FilteredResult
         searchTerm={searchTerm}
         selected={selected}
         searchExecuted={searchExecuted}
+        orderBy={orderBy}
+        orderDirection={orderDirection}
       />
     </ScrollView>
   );
@@ -154,7 +214,7 @@ const styles = StyleSheet.create({
   inlineSearchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1, // Permite que ocupe el espacio restante
+    flex: 1,
   },
   optionContainer: {
     flexDirection: 'row',
@@ -165,5 +225,17 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 16,
     color: '#444',
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eee',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+  },
+  sortText: {
+    marginLeft: 8,
+    color: '#666',
   },
 });

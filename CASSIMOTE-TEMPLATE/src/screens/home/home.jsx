@@ -30,13 +30,15 @@ export default function Home() {
   const { lastThreeRecipes, diet, timeSpent, ability } = data;
   const categories = [diet, timeSpent, ability];
 
-  // Maneja la búsqueda: redirige a la screen de filtros con datos precargados
+  // rdenamiento por defecto título ascendente
   const handleSearch = () => {
     if (searchText.trim() !== '') {
       navigation.navigate('filteredResults', {
         fromHome: true,
         query: searchText.trim(),
-        selectedFilter: 3, // corresponde a "Nombre de Receta"
+        selectedFilter: 3,          // Nombre de Receta
+        orderBy: 'title',           // Ordenar por nombre de receta
+        orderDirection: 'asc',      // Orden ascendente
       });
     }
   };
@@ -44,13 +46,11 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-
-        {/* SearchBar reutilizable con navegación */}
         <SearchBar
           value={searchText}
           onChangeText={(text) => setSearchText(text)}
           onSubmit={handleSearch}
-          onFilterPress={() => navigation.navigate('filteredResults', { tipo: 'usuario' })}
+          onFilterPress={() => navigation.navigate('filteredResults', { tipo: '' })}
         />
 
         {lastThreeRecipes?.success && (
@@ -76,7 +76,6 @@ export default function Home() {
             ))}
           </View>
         </ScrollView>
-
       </View>
 
       <BottomBar />
