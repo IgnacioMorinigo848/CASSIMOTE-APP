@@ -7,6 +7,7 @@ export const useStepOneForm = (navigation) => {
   const [email, setEmail] = useState("");
   const [nickName, setNickName] = useState("");
   const [error, setError] = useState({});
+  const [exist,setExist] = useState(false);
   const [loading,setLoading] = useState(false);
   const { setToken } = useContext(AuthContext);
 
@@ -29,6 +30,7 @@ export const useStepOneForm = (navigation) => {
     setLoading(true)
       const result = await stepOne(email, nickName);
       if (result?.type === 'errors') {
+        result.errors.nickName != undefined && (setExist(!exist))
         setError(result.errors);
       } else if (result?.success) {
         if (result.type === 'token') {
@@ -61,8 +63,10 @@ export const useStepOneForm = (navigation) => {
   return {
     email,
     nickName,
+    exist,
     setEmail,
     setNickName,
+    setExist,
     error,
     loading,
     handleSubmit,

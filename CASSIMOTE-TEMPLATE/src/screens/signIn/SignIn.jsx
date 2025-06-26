@@ -32,7 +32,7 @@ export default function SingIn({navigation}){
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.buttonBackComponet}><ButtonBack navigation={navigation}/></View>
+            <View style={styles.buttonBackComponet}><ButtonBack navigation={navigation} mode="reset" to="welcome"/></View>
             <View style={styles.content}>
                 <Text style={styles.title}>Iniciar Sesion</Text>
                 <View style={styles.input}>

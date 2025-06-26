@@ -113,12 +113,12 @@ export default function Profile({ navigation }) {
       style={styles.container}
       {...panResponder.current.panHandlers}  // Aquí aplicamos los handlers del gesto
     >
-      <View style={styles.topBarContainer}>
+       <View style={styles.topBarContainer}>
         <View style={styles.profileBarContent}>
           <Text style={styles.profile}>Perfil</Text>
         </View>
         <View style={styles.buttonContent}>
-          <TouchableOpacity onPress={() => navigation.navigate("editProfile", { image: dataProfile.profileImage, nickName: dataProfile.nickName })}>
+          <TouchableOpacity onPress={() => navigation.navigate("editProfile", {image: dataProfile.profileImage,nickName:dataProfile.nickName })}>
             <FontAwesome5 name="pen-nib" size={20} color="black" style={styles.icon} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { setVisible(!visible) }}>
@@ -157,7 +157,7 @@ export default function Profile({ navigation }) {
           <Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text>
         </TouchableOpacity>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {recipeData.map((recipe) => (
+          {recipeData.map((recipe, index) => (
             <ProfileRecipeCard
               key={recipe._id}
               recipe={recipe}
@@ -284,9 +284,10 @@ const styles = StyleSheet.create({
   },
   buttonTextCreateRecipe: {
     fontWeight: "300",
-    fontSize: 18,
+    fontSize: 15
   },
   scrollContainer: {
-    alignItems: "center",
+    width: "100%",
+    paddingBottom: 110
   }
 });
