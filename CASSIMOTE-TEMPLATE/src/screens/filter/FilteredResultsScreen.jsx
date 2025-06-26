@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FilteredResult from '../filter/FilteredResult';
-import SearchBar from '../../components/SearchBar'; // Importamos el nuevo componente SearchBar
+import SearchBar from '../../components/SearchBar'; // Asegúrate de que la ruta sea correcta si es diferente
 
 const filters = [
   'Nombre de Usuario',
@@ -40,13 +40,17 @@ const FilteredResultScreen = () => {
   }, [route.params]);
 
   // Función para manejar el botón de retroceso o limpiar la búsqueda
+  // Esta función ahora también se usará para volver a la selección de filtros
   const handleBack = () => {
     if (fromHome) {
-      navigation.goBack(); // vuelve al Home si viene de allí
+      // Si venimos del Home, volvemos al Home
+      navigation.goBack(); 
     } else {
-      setSelected(null); // Deselecciona el filtro
-      setSearchTerm(''); // Limpia el término de búsqueda
-      setSearchExecuted(false); // Resetea la ejecución de búsqueda
+      // Si estamos en la pantalla de resultados de filtro, deseleccionamos el filtro
+      // y reseteamos la búsqueda para mostrar la lista de filtros
+      setSelected(null); 
+      setSearchTerm(''); 
+      setSearchExecuted(false); 
     }
   };
 
@@ -81,6 +85,7 @@ const FilteredResultScreen = () => {
       <View style={styles.headerButton}>
         {selected !== null ? (
           <View style={styles.inlineSearchBar}>
+            {/* Botón de retroceso general para la pantalla de búsqueda */}
             <TouchableOpacity onPress={handleBack}>
               <Ionicons name="arrow-back-circle-outline" size={24} color="#999" />
             </TouchableOpacity>
@@ -92,7 +97,8 @@ const FilteredResultScreen = () => {
                 setSearchExecuted(false);
               }}
               onSubmit={handleSearch}
-              onFilterPress={() => navigation.navigate('filteredResults', { tipo: 'usuario' })} // Al presionar el ícono de filtro, volvemos a la selección de filtros
+
+              onFilterPress={handleBack} 
               customPlaceholder={getPlaceholder()} // Pasamos el placeholder dinámico
             />
           </View>

@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View, SafeAreaView, Platform, StatusBar, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { StyleSheet, Text, View, SafeAreaView, Platform, StatusBar, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, PanResponder } from "react-native";
 import BottomBar from "../../components/BottonBar";
 import { FontAwesome5, Feather } from '@expo/vector-icons';
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import getInitials from "../../helper/getInitials";
 import ProfileRecipeCard from "../../components/ProfileRecipeCard";
 import SesionCloseComponent from "./SesionCloseComponent";
@@ -26,8 +26,32 @@ export default function Profile({ navigation }) {
     if (error || errorProfile) console.error("🔴 ERROR AL CARGAR HOME:", error || errorProfile);
   }, [loading, data, error, dataProfile]);
 
-  if (loading || loadingProfile || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
-  if (error || errorProfile) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error?.message || errorProfile?.message}</Text>;
+
+  const twoFingerTouch = useRef(false);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt) => {
+        if (evt.nativeEvent.touches.length === 4) {
+          twoFingerTouch.current = true;
+          return true;
+        }
+        return false;
+      },
+      onPanResponderRelease: () => {
+        if (twoFingerTouch.current) {
+          twoFingerTouch.current = false;
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "approver" }],
+          });
+        }
+      },
+      onPanResponderTerminate: () => {
+        twoFingerTouch.current = false;
+      }
+    })
+  );
 
   const handleSesionClose = () => {
     logout();
@@ -81,9 +105,15 @@ export default function Profile({ navigation }) {
     }
   };
 
+  if (loading || loadingProfile || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+  if (error || errorProfile) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error?.message || errorProfile?.message}</Text>;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.topBarContainer}>
+    <SafeAreaView
+      style={styles.container}
+      {...panResponder.current.panHandlers}  // Aquí aplicamos los handlers del gesto
+    >
+       <View style={styles.topBarContainer}>
         <View style={styles.profileBarContent}>
           <Text style={styles.profile}>Perfil</Text>
         </View>
