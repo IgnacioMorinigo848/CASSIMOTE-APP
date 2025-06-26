@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, Platform, StatusBar, Image, TouchableOpacity,ScrollView,ActivityIndicator } from "react-native";
+import { StyleSheet, Text, View, SafeAreaView, Platform, StatusBar, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from "react-native";
 import BottomBar from "../../components/BottonBar";
 import { FontAwesome5, Feather } from '@expo/vector-icons';
 import { useState, useEffect, useContext } from "react";
@@ -8,27 +8,78 @@ import SesionCloseComponent from "./SesionCloseComponent";
 import { AuthContext } from '../../context/AuthContext';
 import useProfileData from "../../api/RECIPE-SERVICE/profile/profile";
 import useGetProfileData from "../../api/RECIPE-SERVICE/profile/getProfileData";
+import existName from "../../api/RECIPE-SERVICE/createRecipe/existName";
+import deleteRecipe from "../../api/RECIPE-SERVICE/createRecipe/deleteRecipe";
 
 export default function Profile({ navigation }) {
-
-  const [visible,setVisible] = useState(false);
-  const { token,logout } = useContext(AuthContext);
+  const [visible, setVisible] = useState(false);
+  const { token, logout } = useContext(AuthContext);
   const { data, loading, error } = useProfileData(token);
-  const {dataProfile,loadingProfile, errorProfile} = useGetProfileData(token)
+  const { dataProfile, loadingProfile, errorProfile } = useGetProfileData(token);
+  const [recipeData, setRecipeData] = useState([]);
 
   useEffect(() => {
-    if (!loading && data || !loadingProfile && dataProfile) console.log("🟢 HOME DATA:", data);
-    if (!loading && error || !loadingProfile && errorProfile) console.error("🔴 ERROR AL CARGAR HOME:", error);
-  }, [loading, data, error,dataProfile]);
+    if (!loading && data) {
+      setRecipeData(data);
+    }
+    if (!loading && data) console.log("🟢 HOME DATA:", data);
+    if (error || errorProfile) console.error("🔴 ERROR AL CARGAR HOME:", error || errorProfile);
+  }, [loading, data, error, dataProfile]);
 
-  if (loading || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+  if (loading || loadingProfile || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+  if (error || errorProfile) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error?.message || errorProfile?.message}</Text>;
 
-  if (error || errorProfile) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error.message}</Text>;
-
-  const handleSesionClose = () =>{
+  const handleSesionClose = () => {
     logout();
-    navigation.navigate("signIn")
-  }
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "signIn" }]
+    });
+  };
+
+  const handleDelete = async (id) => {
+    Alert.alert(
+      "Confirmar eliminación",
+      "¿Estás seguro de que querés eliminar esta receta?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            const result = await deleteRecipe(id, token);
+            if (result.success) {
+              setRecipeData(prev => prev.filter(recipe => recipe._id !== id));
+            } else {
+              Alert.alert("Error", result.message || "No se pudo eliminar la receta.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleEdit = async (name) => {
+    try {
+      const result = await existName(name.trim(), token);
+      if (result.success && result.recipe) {
+        setRecipeData(prev => prev.map(r => r._id === result.recipe._id ? result.recipe : r));
+        navigation.navigate('createRecipe', {
+          screen: 'stepTwo',
+          params: {
+            mode: 'UPDATE',
+            recipe: result.recipe,
+            activate: true,
+            id: result.recipe?._id
+          }
+        });
+      } else {
+        Alert.alert("Error", result.message || "No se encontró la receta.");
+      }
+    } catch (e) {
+      Alert.alert("Error", e.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -37,8 +88,12 @@ export default function Profile({ navigation }) {
           <Text style={styles.profile}>Perfil</Text>
         </View>
         <View style={styles.buttonContent}>
-          <TouchableOpacity onPress={()=>navigation.navigate("editProfile",{image:dataProfile.profileImage})}><FontAwesome5 name="pen-nib" size={20} color="black" style={styles.icon} /></TouchableOpacity>
-          <TouchableOpacity onPress={()=>{setVisible(!visible)}}><Feather name="power" size={20} color="black" style={styles.icon} /></TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("editProfile", {image: dataProfile.profileImage,nickName:dataProfile.nickName })}>
+            <FontAwesome5 name="pen-nib" size={20} color="black" style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { setVisible(!visible) }}>
+            <Feather name="power" size={20} color="black" style={styles.icon} />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -46,7 +101,7 @@ export default function Profile({ navigation }) {
         <View style={styles.profileContent}>
           <View style={styles.imageContent}>
             {dataProfile?.profileImage ? (
-              <Image style={styles.image} source={{uri:dataProfile.profileImage}} />
+              <Image style={styles.image} source={{ uri: dataProfile.profileImage }} />
             ) : (
               <Text style={styles.initialsText}>{getInitials(dataProfile.nickName)}</Text>
             )}
@@ -59,23 +114,36 @@ export default function Profile({ navigation }) {
       </View>
 
       <View style={styles.preferencesContainer}>
-        <TouchableOpacity style={styles.preferencesButton} onPress={() => navigation.navigate("editPreferences",{image:dataProfile.profileImage})}>
+        <TouchableOpacity style={styles.preferencesButton} onPress={() => navigation.navigate("editPreferences", { image: dataProfile.profileImage })}>
           <Text>Mis Preferencias</Text>
         </TouchableOpacity>
       </View>
+
       <View style={styles.recipeContainer}>
         <View style={styles.recipeTextContainer}>
           <Text style={styles.recipeText}>Mis Recetas</Text>
         </View>
-        <TouchableOpacity style={styles.createRecipeButton} onPress={()=>navigation.navigate("createRecipe")}><Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text></TouchableOpacity>
-         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {data.map((recipe,index) =>(
-          <ProfileRecipeCard key={index} recipe={recipe} nickName={true} />
+        <TouchableOpacity style={styles.createRecipeButton} onPress={() => navigation.navigate("createRecipe")}>
+          <Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text>
+        </TouchableOpacity>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {recipeData.map((recipe, index) => (
+            <ProfileRecipeCard
+              key={recipe._id}
+              recipe={recipe}
+              showDelete={true}
+              showEdit={true}
+              onDelete={() => handleDelete(recipe._id)}
+              onEdit={() => handleEdit(recipe.name)}
+              navigation={navigation}
+              source={"profile"}
+            />
           ))}
         </ScrollView>
       </View>
-      <SesionCloseComponent visible={visible} setVisible={setVisible} handleSesionClose={()=>handleSesionClose()}/>
-      <BottomBar/>
+
+      <SesionCloseComponent visible={visible} setVisible={setVisible} handleSesionClose={handleSesionClose} />
+      <BottomBar />
     </SafeAreaView>
   );
 }
@@ -96,7 +164,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#7F7F7F"
   },
-  profileBarContent: {},
   profile: {
     color: "#000",
     fontSize: 30,
@@ -117,7 +184,6 @@ const styles = StyleSheet.create({
   profileContent: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start",
     gap: 10
   },
   imageContent: {
@@ -162,38 +228,36 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     alignItems: "center"
   },
-  recipeContainer:{
-    flex:1,
-    alignItems:"center"
-
+  recipeContainer: {
+    flex: 1,
+    alignItems: "center"
   },
   recipeTextContainer: {
-    alignItems: "right",
-    width:"100%",
-    padding:20,
+    width: "100%",
+    padding: 20,
   },
   recipeText: {
     fontSize: 18,
-    width:103,
-    fontWeight:900,
+    width: 103,
+    fontWeight: "900",
     color: '#000',
-    borderBottomWidth:1,
-    borderBottomColor:"#AF47D2",
+    borderBottomWidth: 1,
+    borderBottomColor: "#AF47D2",
   },
-  createRecipeButton:{
-    width:"90%",
-    alignItems:"center",
-    padding:10,
-    backgroundColor:"#D9D9D9",
+  createRecipeButton: {
+    width: "90%",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#D9D9D9",
     borderRadius: 17,
-    marginBottom:10,
+    marginBottom: 10,
   },
-  buttonTextCreateRecipe:{
-    fontWeight:300,
-    fontSize:15
+  buttonTextCreateRecipe: {
+    fontWeight: "300",
+    fontSize: 15
   },
-    scrollContainer: {
-    width:"100%",
-    paddingBottom:110
+  scrollContainer: {
+    width: "100%",
+    paddingBottom: 110
   }
 });

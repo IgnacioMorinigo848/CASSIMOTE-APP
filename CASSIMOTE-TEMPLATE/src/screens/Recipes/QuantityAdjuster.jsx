@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import PlusMinusButton from './PlusMinusButton';
 
-const QuantityAdjuster = ({ value, unit = 'gr',onChange }) => {
+const QuantityAdjuster = ({ value, unit = 'gr',onChange,disguise= "profile" }) => {
   const [values, setValues] = useState(value);
 
   useEffect(() => {
@@ -11,9 +11,13 @@ const QuantityAdjuster = ({ value, unit = 'gr',onChange }) => {
 
   return (
     <View style={styles.container}>
-      <PlusMinusButton onPress={() => onChange(-1)} symbol="-" />
+      { (disguise !== "profile") &&(
+      <PlusMinusButton onPress={() => onChange(-1)} symbol="-" />)
+      }
       <Text style={styles.valueText}>{values} {unit}</Text>
-      <PlusMinusButton onPress={() => onChange(1)} symbol="+" />
+      { (disguise !== "profile")  &&(
+      <PlusMinusButton onPress={() => onChange(1)} symbol="+" />)
+      }
     </View>
   );
 };
