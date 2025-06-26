@@ -15,6 +15,7 @@ import CreateRecipeFlowStackNavigator from "./createRecipeFlowStackNavigator.js"
 import ArchivedScreen from '../screens/archived/archivedScreen.jsx';
 import { AuthContext } from "../context/AuthContext.js";
 import { ActivityIndicator, View } from "react-native";
+import ApproverScreen from "../screens/approver/ApproverScreen.jsx";
 
 export default function mainStackNavigator() {
     const {token,loading} = useContext(AuthContext);
@@ -40,13 +41,14 @@ export default function mainStackNavigator() {
             <Stack.Screen name="signIn" component={SingIn} options={{headerShown:false}}/>
             <Stack.Screen name="signUpFlowStackNatigator" component={SignUpFlowStackNatigator} options={{headerShown:false}}/>
             <Stack.Screen name="recoverAccountFlowStackNavigator" component={RecoverAccountFlowStackNavigator} options={{headerShown:false}}/>
-            <Stack.Screen name="profileFlowStackNavigator" component={ProfileFlowStackNavigator} options={{headerShown:false}}/>
+            <Stack.Screen name="profileFlowStackNavigator" component={ProfileFlowStackNavigator} options={{headerShown:false,gestureEnabled: false }}/>
             <Stack.Screen name="filter" component={SearchBar} />
             <Stack.Screen name="filteredResults" component={FilteredResultsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{headerShown:false}}/>
             <Stack.Screen name="AddRating" component={AddRatingScreen} options={{headerShown:false}}/>
             <Stack.Screen name="createRecipe" component={CreateRecipeFlowStackNavigator} options={{headerShown:false}}/>
-             <Stack.Screen name="archived" component={ArchivedScreen} options={{headerShown:false}}/>
+            <Stack.Screen name="archived" component={ArchivedScreen} options={{headerShown:false}}/>
+            <Stack.Screen name="approver" component={ApproverScreen} options={{headerShown:false}}/>
         </Stack.Navigator>
     );
 };

@@ -9,7 +9,7 @@ export default function ProfileFlowStackNavigator(){
 
     return(
         <Stack.Navigator initialRouteName="profile" >
-            <Stack.Screen name="profile" component={Profile} options={{headerShown:false}} />
+            <Stack.Screen name="profile" component={Profile} options={{headerShown:false,gestureEnabled: false }} />
             <Stack.Screen name="editPreferences" component={EditPreferences} options={{headerShown:false}} />
              <Stack.Screen name="editProfile" component={EditProfile} options={{headerShown:false}} />
         </Stack.Navigator>
