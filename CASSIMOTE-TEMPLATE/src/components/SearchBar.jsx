@@ -1,11 +1,9 @@
+// components/SearchBar.jsx
 import React from 'react';
-import { View, TextInput, TouchableOpacity ,StyleSheet} from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 
-export default function SearchBar({value, onChangeText, onFilterPress, onSubmit}) {
-  const navigation = useNavigation();
-
+export default function SearchBar({ value, onChangeText, onFilterPress, onSubmit }) {
   return (
     <View style={styles.container}>
       <TextInput
@@ -21,13 +19,13 @@ export default function SearchBar({value, onChangeText, onFilterPress, onSubmit}
         <Ionicons name="arrow-forward-circle-outline" size={24} color="#666" style={styles.icon} />
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('filteredResults', { tipo: 'usuario' })}>
+      <TouchableOpacity onPress={onFilterPress}>
         <Ionicons name="filter-outline" size={24} color="#666" style={styles.icon} />
       </TouchableOpacity>
     </View>
   );
 }
- 
+
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#f2f2f2',

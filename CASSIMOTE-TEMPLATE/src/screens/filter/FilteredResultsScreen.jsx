@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -22,11 +23,29 @@ const FilteredResultScreen = () => {
   const [selected, setSelected] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchExecuted, setSearchExecuted] = useState(false);
+  const [fromHome, setFromHome] = useState(false);
 
-  const resetFilter = () => {
-    setSelected(null);
-    setSearchTerm('');
-    setSearchExecuted(false);
+  const route = useRoute();
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const { fromHome, query, selectedFilter } = route.params || {};
+    if (fromHome && query && selectedFilter !== undefined) {
+      setSelected(selectedFilter);
+      setSearchTerm(query);
+      setSearchExecuted(true);
+      setFromHome(true); // Guardamos el origen
+    }
+  }, [route.params]);
+
+  const handleBack = () => {
+    if (fromHome) {
+      navigation.goBack(); // vuelve al Home
+    } else {
+      setSelected(null);
+      setSearchTerm('');
+      setSearchExecuted(false);
+    }
   };
 
   const getPlaceholder = () => {
@@ -52,7 +71,7 @@ const FilteredResultScreen = () => {
       <View style={styles.headerButton}>
         {selected !== null ? (
           <View style={styles.inlineSearchBar}>
-            <TouchableOpacity onPress={resetFilter}>
+            <TouchableOpacity onPress={handleBack}>
               <Ionicons name="arrow-back-circle-outline" size={24} color="#999" />
             </TouchableOpacity>
             <TextInput
@@ -63,6 +82,12 @@ const FilteredResultScreen = () => {
               onChangeText={(text) => {
                 setSearchTerm(text);
                 setSearchExecuted(false);
+              }}
+              returnKeyType="search"
+              onSubmitEditing={() => {
+                if (searchTerm.trim() !== '') {
+                  setSearchExecuted(true);
+                }
               }}
             />
             <TouchableOpacity
@@ -80,23 +105,18 @@ const FilteredResultScreen = () => {
         )}
       </View>
 
-      {/* Lista de opciones */}
-      {/* Lista de filtros solo si no hay uno seleccionado */}
-      {selected === null && filters.map((filter, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.optionContainer}
-          onPress={() => setSelected(index)}
-        >
-          <Ionicons
-            name={'radio-button-off'}
-            size={20}
-            color="#888"
-          />
-          <Text style={styles.optionText}>{filter}</Text>
-        </TouchableOpacity>
-      ))}
-
+      {/* Lista de filtros */}
+      {selected === null &&
+        filters.map((filter, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.optionContainer}
+            onPress={() => setSelected(index)}
+          >
+            <Ionicons name={'radio-button-off'} size={20} color="#888" />
+            <Text style={styles.optionText}>{filter}</Text>
+          </TouchableOpacity>
+        ))}
 
       {/* Resultados */}
       <FilteredResult
