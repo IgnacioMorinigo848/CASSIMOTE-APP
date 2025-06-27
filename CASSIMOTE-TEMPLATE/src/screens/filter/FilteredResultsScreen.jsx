@@ -1,4 +1,4 @@
-// ... tus imports
+
 import React, { useState, useEffect } from 'react';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import {
@@ -112,31 +112,40 @@ const FilteredResultScreen = () => {
     setSearchExecuted(true); // fuerza re-fetch en FilteredResult
   };
 
-  const renderOrderButtons = () => {
-    const options = getOrderOptions();
-    return (
-      <View style={{ gap: 10 }}>
-        {options.includes('date') && (
-          <TouchableOpacity style={styles.sortButton} onPress={() => toggleOrder('date')}>
-            <Ionicons name="time-outline" size={18} color="#888" />
-            <Text style={styles.sortText}>Ordenar por antigüedad ({orderBy === 'date' ? (orderDirection === 'asc' ? '↑' : '↓') : ''})</Text>
-          </TouchableOpacity>
-        )}
-        {options.includes('nickname') && (
-          <TouchableOpacity style={styles.sortButton} onPress={() => toggleOrder('nickname')}>
-            <Ionicons name="person-outline" size={18} color="#888" />
-            <Text style={styles.sortText}>Ordenar por usuario ({orderBy === 'nickname' ? (orderDirection === 'asc' ? '↑' : '↓') : ''})</Text>
-          </TouchableOpacity>
-        )}
-        {options.includes('name') && (
-          <TouchableOpacity style={styles.sortButton} onPress={() => toggleOrder('name')}>
-            <Ionicons name="book-outline" size={18} color="#888" />
-            <Text style={styles.sortText}>Ordenar por nombre de receta ({orderBy === 'name' ? (orderDirection === 'asc' ? '↑' : '↓') : ''})</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    );
-  };
+  // const renderOrderButtons = () => {
+  //   const options = getOrderOptions();
+  //   return (
+  //     <View style={{ gap: 10 }}>
+  //       {options.includes('date') && (
+  //         <TouchableOpacity style={styles.sortButton} onPress={() => toggleOrder('date')}>
+  //           <Ionicons name="time-outline" size={18} color="#888" />
+  //           <Text style={styles.sortText}>Ordenar por antigüedad ({orderBy === 'date' ? (orderDirection === 'asc' ? '↑' : '↓') : ''})</Text>
+  //         </TouchableOpacity>
+  //       )}
+  //       {options.includes('nickname') && (
+  //         <TouchableOpacity style={styles.sortButton} onPress={() => toggleOrder('nickname')}>
+  //           <Ionicons name="person-outline" size={18} color="#888" />
+  //           <Text style={styles.sortText}>Ordenar por usuario ({orderBy === 'nickname' ? (orderDirection === 'asc' ? '↑' : '↓') : ''})</Text>
+  //         </TouchableOpacity>
+  //       )}
+  //       {options.includes('name') && (
+  //         <TouchableOpacity style={styles.sortButton} onPress={() => toggleOrder('name')}>
+  //           <Ionicons name="book-outline" size={18} color="#888" />
+  //           <Text style={styles.sortText}>Ordenar por nombre de receta ({orderBy === 'name' ? (orderDirection === 'asc' ? '↑' : '↓') : ''})</Text>
+  //         </TouchableOpacity>
+  //       )}
+  //     </View>
+  //   );
+  // };
+  const onChangeOrder = (newOrderBy) => {
+  if (orderBy === newOrderBy) {
+    setOrderDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+  } else {
+    setOrderBy(newOrderBy);
+    setOrderDirection('asc');
+  }
+  setSearchExecuted(true); // fuerza re-fetch
+};
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -175,8 +184,8 @@ const FilteredResultScreen = () => {
           </TouchableOpacity>
         ))}
 
-      {/* Botones de ordenamiento */}
-      {selected !== null && renderOrderButtons()}
+      {/* Botones de ordenamiento
+      {selected !== null && renderOrderButtons()} */}
 
       {/* Resultados con ordenamiento */}
       <FilteredResult
@@ -185,6 +194,7 @@ const FilteredResultScreen = () => {
         searchExecuted={searchExecuted}
         orderBy={orderBy}
         orderDirection={orderDirection}
+        onChangeOrder={onChangeOrder}
       />
     </ScrollView>
   );

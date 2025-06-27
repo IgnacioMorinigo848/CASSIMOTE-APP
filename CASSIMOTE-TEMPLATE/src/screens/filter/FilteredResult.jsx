@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -33,25 +33,16 @@ const dummyResults = [
   },
 ];
 
-const FilteredResult = ({ searchTerm, selected, searchExecuted }) => {
+const FilteredResult = ({ searchTerm, selected, searchExecuted, orderBy, orderDirection, onChangeOrder }) => {
   const trimmedSearch = (searchTerm || '').trim();
-  const [orderBy, setOrderBy] = useState('fecha'); // fecha o usuario
-  const [orderDirection, setOrderDirection] = useState('asc'); // asc o desc
-  const [results, setResults] = useState([]);
 
-  useEffect(() => {
-    if (searchExecuted && trimmedSearch !== '') {
-      fetchData(); // Simula llamada al backend
-    }
-  }, [searchExecuted, orderBy, orderDirection, searchTerm]);
+  const onlyDateFilters = [0, 3, 4];
+  const showUserSort = !onlyDateFilters.includes(selected);
 
   const fetchData = () => {
-    // Simulación de fetch ordenado
     let sorted = [...dummyResults];
-    if (orderBy === 'fecha') {
-      sorted.sort((a, b) =>
-        orderDirection === 'asc' ? a.id - b.id : b.id - a.id
-      );
+    if (orderBy === 'date') {
+      sorted.sort((a, b) => orderDirection === 'asc' ? a.id - b.id : b.id - a.id);
     } else if (orderBy === 'usuario') {
       sorted.sort((a, b) => {
         const nameA = a.user.toLowerCase();
@@ -61,38 +52,35 @@ const FilteredResult = ({ searchTerm, selected, searchExecuted }) => {
         return 0;
       });
     }
-    setResults(sorted);
+    return sorted;
   };
 
+  const results = (searchExecuted && trimmedSearch !== '') ? fetchData() : [];
+
   return (
-    <View style={{ marginTop: 30 }}>
+    <View style={{ marginTop: 20 }}>
       {selected !== null && (
         <View style={{ gap: 10 }}>
           {/* Botón: Ordenar por fecha */}
           <TouchableOpacity
             style={styles.sortButton}
-            onPress={() => {
-              setOrderBy('fecha');
-              setOrderDirection((prev) => (orderBy === 'fecha' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc'));
-            }}
+            onPress={() => onChangeOrder('date')}
           >
             <Ionicons name="swap-vertical" size={18} color="#888" />
             <Text style={styles.sortText}>
-              Ordenar por antigüedad ({orderDirection === 'asc' && orderBy === 'fecha' ? '↑' : '↓'})
+              Ordenar por antigüedad {orderBy === 'date' ? (orderDirection === 'asc' ? '↑' : '↓') : ''}
             </Text>
           </TouchableOpacity>
 
-          {(selected === 1 || selected === 2 || selected === 3 || selected === 4) && (
+          {/* Botón: Ordenar por usuario si corresponde */}
+          {showUserSort && (
             <TouchableOpacity
               style={styles.sortButton}
-              onPress={() => {
-                setOrderBy('usuario');
-                setOrderDirection((prev) => (orderBy === 'usuario' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc'));
-              }}
+              onPress={() => onChangeOrder('usuario')}
             >
               <Ionicons name="person" size={18} color="#888" />
               <Text style={styles.sortText}>
-                Ordenar por nombre de usuario ({orderDirection === 'asc' && orderBy === 'usuario' ? '↑' : '↓'})
+                Ordenar por nombre de usuario {orderBy === 'usuario' ? (orderDirection === 'asc' ? '↑' : '↓') : ''}
               </Text>
             </TouchableOpacity>
           )}
@@ -100,21 +88,20 @@ const FilteredResult = ({ searchTerm, selected, searchExecuted }) => {
       )}
 
       {/* Resultados */}
-      {searchExecuted && trimmedSearch !== '' && selected !== null &&
-        results.map((result) => (
-          <View key={result.id} style={styles.card}>
-            <Image source={{ uri: result.image }} style={styles.image} />
-            <View style={styles.cardInfo}>
-              <Text style={styles.cardTitle}>{result.user}</Text>
-              <Text style={styles.cardSubtitle}>{result.recipe}</Text>
-              <View style={styles.stars}>
-                {[...Array(result.rating)].map((_, i) => (
-                  <Ionicons key={i} name="star" size={16} color="gold" />
-                ))}
-              </View>
+      {results.map((result) => (
+        <View key={result.id} style={styles.card}>
+          <Image source={{ uri: result.image }} style={styles.image} />
+          <View style={styles.cardInfo}>
+            <Text style={styles.cardTitle}>{result.user}</Text>
+            <Text style={styles.cardSubtitle}>{result.recipe}</Text>
+            <View style={styles.stars}>
+              {[...Array(result.rating)].map((_, i) => (
+                <Ionicons key={i} name="star" size={16} color="gold" />
+              ))}
             </View>
           </View>
-        ))}
+        </View>
+      ))}
     </View>
   );
 };
@@ -128,7 +115,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
     borderRadius: 10,
     padding: 10,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   sortText: {
     marginLeft: 8,
