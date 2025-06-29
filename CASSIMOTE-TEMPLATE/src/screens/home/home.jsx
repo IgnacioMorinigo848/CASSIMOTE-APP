@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext,useState } from 'react';
 import { View, SafeAreaView, ScrollView, ActivityIndicator, Text } from 'react-native';
 import styles from './styles';
 import SearchBar from '../../components/SearchBar';
@@ -9,10 +9,11 @@ import BottomBar from '../../components/BottonBar';
 import useHomeData from '../../api/RECIPE-SERVICE/home/home';
 import { AuthContext } from '../../context/AuthContext';
 
-export default function Home() {
+export default function Home({navigation}) {
   const { token } = useContext(AuthContext);
   console.log("token desde el home:", token)
   const { data, loading, error } = useHomeData(token);
+    const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (!loading && data) console.log("🟢 HOME DATA:", data);
@@ -30,7 +31,12 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <SearchBar/>
+        <SearchBar 
+        value={searchTerm}
+        onChangeText={(text) => {setSearchTerm(text)}}
+        searchAction={()=>{ navigation.navigate("filteredResults",{option:1,text:searchTerm})}} 
+        filterAction={()=> {navigation.navigate("filteredResults")}}
+        />
       {lastThreeRecipes?.success && (
         <>
           <SectionTitle title={lastThreeRecipes.title} />

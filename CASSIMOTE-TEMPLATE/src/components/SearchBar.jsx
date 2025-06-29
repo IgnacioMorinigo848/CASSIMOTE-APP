@@ -3,25 +3,25 @@ import { View, TextInput, TouchableOpacity ,StyleSheet} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-export default function SearchBar({value, onChangeText, onFilterPress, onSubmit}) {
+export default function SearchBar({ placeholder="¿Qué querés cocinar hoy?",value, onChangeText, onSubmit,searchAction,filterAction}) {
   const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.input}
-        placeholder="¿Qué querés cocinar hoy?"
         value={value}
+        placeholder={placeholder}
         onChangeText={onChangeText}
         returnKeyType="search"
         onSubmitEditing={onSubmit}
       />
 
-      <TouchableOpacity onPress={onSubmit}>
+      <TouchableOpacity onPress={() => {searchAction()}}>
         <Ionicons name="arrow-forward-circle-outline" size={24} color="#666" style={styles.icon} />
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('filteredResults', { tipo: 'usuario' })}>
+      <TouchableOpacity onPress={()=>{filterAction()}}>
         <Ionicons name="filter-outline" size={24} color="#666" style={styles.icon} />
       </TouchableOpacity>
     </View>

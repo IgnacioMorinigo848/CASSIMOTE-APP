@@ -32,7 +32,7 @@ export default function Profile({ navigation }) {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt) => {
-        if (evt.nativeEvent.touches.length === 4) {
+        if (evt.nativeEvent.touches.length === 1) {
           twoFingerTouch.current = true;
           return true;
         }
