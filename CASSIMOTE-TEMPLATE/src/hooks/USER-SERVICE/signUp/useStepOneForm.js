@@ -29,6 +29,8 @@ export const useStepOneForm = (navigation) => {
     try {
     setLoading(true)
       const result = await stepOne(email, nickName);
+       setLoading(false);
+
       if (result?.type === 'errors') {
         result.errors.nickName != undefined && (setExist(!exist))
         setError(result.errors);

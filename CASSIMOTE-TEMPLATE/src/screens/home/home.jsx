@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useEffect, useContext, useState } from 'react';
+=======
+import React, { useEffect, useContext,useState } from 'react';
+>>>>>>> origin/Nacho
 import { View, SafeAreaView, ScrollView, ActivityIndicator, Text } from 'react-native';
 import styles from './styles';
 import SearchBar from '../../components/SearchBar';
@@ -10,13 +14,14 @@ import useHomeData from '../../api/RECIPE-SERVICE/home/home';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 
-export default function Home() {
+export default function Home({navigation}) {
   const { token } = useContext(AuthContext);
   const navigation = useNavigation();
 
   const [searchText, setSearchText] = useState('');
 
   const { data, loading, error } = useHomeData(token);
+    const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (!loading && data) console.log("🟢 HOME DATA:", data);
@@ -46,12 +51,43 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
+<<<<<<< HEAD
         <SearchBar
           value={searchText}
           onChangeText={(text) => setSearchText(text)}
           onSubmit={handleSearch}
           onFilterPress={() => navigation.navigate('filteredResults', { tipo: '' })}
         />
+=======
+        <SearchBar 
+        value={searchTerm}
+        onChangeText={(text) => {setSearchTerm(text)}}
+        searchAction={()=>{ navigation.navigate("filteredResults",{option:1,text:searchTerm})}} 
+        filterAction={()=> {navigation.navigate("filteredResults")}}
+        />
+      {lastThreeRecipes?.success && (
+        <>
+          <SectionTitle title={lastThreeRecipes.title} />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ width:940,height:"auto",gap:20 }}>
+            {lastThreeRecipes.recipes.map((item, index) => (
+              <RecipeCard key={item._id || index} recipe={item} />
+            ))}
+          </ScrollView>
+        </>
+      )}
+      
+        <SectionTitle title="Categorías" />
+     <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}>
+  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: "space-between", width: "100%" }}>
+    {categories.map((item, index) => (
+      item?.success && <CategoryCard key={index} data={item} />
+    ))}
+  </View>
+</ScrollView>
+>>>>>>> origin/Nacho
 
         {lastThreeRecipes?.success && (
           <>

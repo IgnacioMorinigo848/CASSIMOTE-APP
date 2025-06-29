@@ -2,6 +2,7 @@ import { useState,useContext } from "react";
 import { View, Text,SafeAreaView, StyleSheet,Platform,StatusBar  } from "react-native";
 import {ButtonComponent,ButtonBack,InputComponent,RadioButton,validateSignIn} from "./index";
 import {AuthContext} from "../../context/AuthContext"
+import { CommonActions } from '@react-navigation/native';
 
 export default function SingIn({navigation}){
     const [email, setEmail] = useState("");
@@ -21,8 +22,12 @@ export default function SingIn({navigation}){
     if (validate()){
       const result = await login(nickName, email, password);
         if (result.success) {
-        console.log(result.message)
-        navigation.navigate("home")
+          navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'home' }],
+          })
+        );
         } else {
           setError(result.message);
           console.log(result.message)
@@ -69,6 +74,7 @@ export default function SingIn({navigation}){
                     </View>
                 </View>
                 <ButtonComponent onPress={handleLogin}>INICIAR SESION</ButtonComponent>
+                <ButtonComponent onPress={()=>{navigation.navigate("signUpFlowStackNatigator")}}>CREAR CUENTA</ButtonComponent>
             </View>
         </SafeAreaView>
     );

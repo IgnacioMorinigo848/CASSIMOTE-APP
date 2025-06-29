@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
   loginText: {
     fontSize: wp('4.5%'),
     color: '#FFFFFF',
+    marginBottom:20
   },
   loginLink: {
     color: '#FFE600',

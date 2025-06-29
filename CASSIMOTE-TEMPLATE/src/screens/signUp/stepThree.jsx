@@ -4,6 +4,7 @@ import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import ButtonBack from '../../components/BackButtonComponent';
 import { useStepThreeForm } from '../../hooks/USER-SERVICE/signUp/useStepThreeForm';
+import { CommonActions } from '@react-navigation/native';
 
 export default function StepThree({ navigation }) {
   const { password, setPassword, error, loading, handleSubmit } = useStepThreeForm(navigation);
@@ -34,7 +35,12 @@ export default function StepThree({ navigation }) {
         <ButtonComponent width="65%" color={"#26355D"} onPress={handleSubmit} disabled={loading}>
           {loading ? "Cargando..." : "SIGUIENTE"}
         </ButtonComponent>
-        <TextComponent type={"footer"} onPress={() => navigation.navigate("signIn")}>
+        <TextComponent type={"footer"} onPress={() => navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'signIn' }],
+          })
+        )}>
           Ya tenes una cuenta?
         </TextComponent>
       </View>
