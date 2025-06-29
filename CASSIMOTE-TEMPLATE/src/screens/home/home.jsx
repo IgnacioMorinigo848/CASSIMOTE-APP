@@ -8,19 +8,16 @@ import CategoryCard from '../../components/CategoryCard';
 import BottomBar from '../../components/BottonBar';
 import useHomeData from '../../api/RECIPE-SERVICE/home/home';
 import { AuthContext } from '../../context/AuthContext';
+import searchByName from "../../api/RECIPE-SERVICE/search/searchByName"
 
 export default function Home({navigation}) {
   const { token } = useContext(AuthContext);
   console.log("token desde el home:", token)
   const { data, loading, error } = useHomeData(token);
-    const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loadingSearch,setLoadingSearch] = useState(false);
 
-  useEffect(() => {
-    if (!loading && data) console.log("🟢 HOME DATA:", data);
-    if (!loading && error) console.error("🔴 ERROR AL CARGAR HOME:", error);
-  }, [loading, data, error]);
-
-  if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+  if (loading || loadingSearch) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
 
   if (error) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error.message}</Text>;
 
@@ -28,14 +25,37 @@ export default function Home({navigation}) {
 
   const categories = [diet, timeSpent, ability];
 
+  const getSearch = async (searchTerm) => {
+  setLoadingSearch(true);
+  const result = await searchByName(token, searchTerm);
+  setLoadingSearch(false);
+
+  if (result?.success) {
+    navigation.navigate("filteredResults", {
+      recipesName: result.recipes,
+      errorName: null,
+      option: 1,
+      text:searchTerm
+    });
+  } else {
+    navigation.navigate("filteredResults", {
+      recipesName: null,
+      errorName: result?.message || 'Error desconocido',
+      option: 1,
+      text:searchTerm
+    });
+  }
+   setSearchTerm("")
+};
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <SearchBar 
         value={searchTerm}
         onChangeText={(text) => {setSearchTerm(text)}}
-        searchAction={()=>{ navigation.navigate("filteredResults",{option:1,text:searchTerm})}} 
-        filterAction={()=> {navigation.navigate("filteredResults")}}
+        searchAction={()=>{getSearch(searchTerm)}} 
+       filterAction={()=> {navigation.navigate("filteredResults")}}
         />
       {lastThreeRecipes?.success && (
         <>

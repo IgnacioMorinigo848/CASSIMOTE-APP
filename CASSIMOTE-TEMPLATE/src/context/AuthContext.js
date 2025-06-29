@@ -12,14 +12,13 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true); // inicia en true hasta verificar token
 
-  const login = async (nickName, email, password) => {
+  const login = async (email, password) => {
     const query = `
-      mutation signIn($nickName: String!, $email: String!, $password: String!) {
-        signIn(nickName: $nickName, email: $email, password: $password) {
+      mutation signIn($email: String!, $password: String!) {
+        signIn(email: $email, password: $password) {
           success
           token
           errors {
-            nickName
             email
             password
           }
@@ -27,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       }
     `;
 
-    const variables = { nickName, email, password };
+    const variables = { email, password };
 
     try {
       const response = await axios.post(
@@ -45,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       const resp = data.data.signIn;
 
       if (resp.success) {
-        const userData = { nickName, email };
+        const userData = { email };
         setToken(resp.token);
         setUser(userData);
 

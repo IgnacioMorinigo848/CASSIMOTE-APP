@@ -6,21 +6,20 @@ import { CommonActions } from '@react-navigation/native';
 
 export default function SingIn({navigation}){
     const [email, setEmail] = useState("");
-    const [nickName, setNickName] = useState("");
     const [password, setPassword] = useState("");
     const [error,setError] = useState({});
     const [selected, setSelected] = useState(false);
     const { login } = useContext(AuthContext);
 
     const validate = () => {
-        const newError = validateSignIn({ email, nickName, password });
+        const newError = validateSignIn({ email,password });
     setError(newError);
     return Object.keys(newError).length === 0;
     };
 
     const handleLogin = async () => {
     if (validate()){
-      const result = await login(nickName, email, password);
+      const result = await login(email, password);
         if (result.success) {
           navigation.dispatch(
           CommonActions.reset({
@@ -41,13 +40,6 @@ export default function SingIn({navigation}){
             <View style={styles.content}>
                 <Text style={styles.title}>Iniciar Sesion</Text>
                 <View style={styles.input}>
-                    <InputComponent
-                        value={nickName}
-                        onChangeText={setNickName}
-                        placeholder="Alias"
-                        error={error.nickName}
-                        showValidationIcon={false}
-                    />
                     <InputComponent
                         value={email}
                         onChangeText={setEmail}
