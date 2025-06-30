@@ -12,7 +12,6 @@ import searchByName from "../../api/RECIPE-SERVICE/search/searchByName"
 
 export default function Home({navigation}) {
   const { token } = useContext(AuthContext);
-  console.log("token desde el home:", token)
   const { data, loading, error } = useHomeData(token);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingSearch,setLoadingSearch] = useState(false);
@@ -57,7 +56,7 @@ export default function Home({navigation}) {
         value={searchTerm}
         onChangeText={(text) => {setSearchTerm(text)}}
         searchAction={()=>{ getSearch(searchTerm)}} 
-       filterAction={()=> {navigation.navigate("filteredResults")}}
+        filterAction={()=> {navigation.navigate("filteredResults")}}
         />
       {lastThreeRecipes?.success && (
         <>

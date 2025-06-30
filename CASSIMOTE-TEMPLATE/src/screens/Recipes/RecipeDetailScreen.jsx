@@ -20,6 +20,7 @@ import prepareRecipeForSend from "../../helper/prepareRecipeForSend";
 import addRecipeToList from '../../api/RECIPE-SERVICE/archived/addToList';
 import deleteToList from "../../api/RECIPE-SERVICE/archived/deleteToList";
 import BackButtonComponent from "../../components/BackButtonComponent"
+import InfoRow from './InfoRows';
 
 export default function RecipeDetailScreen({ navigation }) {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -108,8 +109,10 @@ export default function RecipeDetailScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <BackButtonComponent navigation={navigation} mode='goBack'/>
         <Image source={{ uri: recipeData.image }} style={styles.image} />
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </TouchableOpacity>
 
 
         <View style={styles.starsRow}>
@@ -132,12 +135,14 @@ export default function RecipeDetailScreen({ navigation }) {
           </TouchableOpacity>
           }
         </View>
-        <View style={styles.infoRow}>
-          <Text>🛒 {recipeData.ingredients.length}</Text>
-          <Text>💪 {recipeData.difficulty}</Text>
-          <Text>⏰ {recipeData.time}</Text>
+        <View style={{alignItems:"center"}}>
+        <Text style={{fontSize:18,fontWeight:700,padding:10}}>{recipeData.name}</Text>
         </View>
-
+        <InfoRow
+        ingredients={recipeData.ingredients.length}
+        difficulty={recipeData.difficulty}
+        time={recipeData.time}
+        />
         <View style={styles.tabsRow}>
           <TouchableOpacity onPress={() => setActiveTab('Ingredientes')}>
             <Text style={activeTab === 'Ingredientes' ? styles.activeTab : styles.inactiveTab}>
@@ -231,17 +236,22 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
-    paddingBottom: 80, // para que no quede tapado por el ButtonBar fijo
+    paddingBottom: 120, 
   },
+ backButton: {
+  position: 'absolute',
+  top: 30,
+  padding: 2,
+  borderWidth: 2,
+  borderColor: 'white',
+  borderRadius: 50,
+   top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 40,
+    left: 10,
+    zIndex: 10,
+},
   image: {
     width: '100%',
     height: 200,
-  },
-  backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 40,
-    left: 10,
-    zIndex: 10,
   },
   starsRow: {
     flexDirection: 'row',

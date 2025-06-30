@@ -2,7 +2,7 @@ import { View, StyleSheet, Text } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import InputField from './InputField';
 
-const unidades = ['g', 'kg', 'ml', 'l', 'cucharadas', 'taza', 'unidad'];
+const unidades = ['g', 'kg', 'ml', 'l', 'cda', 'taza', 'un'];
 
 const IngredientInput = ({ ingredient, onChange, error }) => {
   return (

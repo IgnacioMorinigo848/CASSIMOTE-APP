@@ -62,7 +62,7 @@ export default function ApproverScreen({ navigation }) {
       <ButtonComponent onPress={showRecipe}>Ver Recetas</ButtonComponent>
       <ButtonComponent onPress={showComment}>Ver Comentarios</ButtonComponent>
 
-      <ScrollView style={{ width: '100%' }}>
+      <ScrollView style={{ width: '100%'}}>
         {btnRecipe && recipes.length > 0 && recipes.map((recipe) => (
           <ExpandableRecipeCard
             key={recipe._id}

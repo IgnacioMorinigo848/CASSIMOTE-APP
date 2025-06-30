@@ -7,7 +7,7 @@
       "EXPO_API_URL_RECIPE": "https://recipe-service-production-ef3b.up.railway.app/recipe/graphql",
       "EXPO_API_URL_IMAGE": "https://image-service-production-184a.up.railway.app/",
       "eas": {
-        "projectId": "f583fa06-df67-483b-baad-d9e848367c7c"
+        "projectId": "301f054d-3195-4168-b619-958db627f19e"
       }
     },
     "version": "1.0.0",
@@ -32,6 +32,6 @@
       "edgeToEdgeEnabled": true,
       "package": "com.imorinigo.CASSIMOTEAPP"
     },
-    "owner": "imorinigo849"
+    "owner": ""
   }
 }

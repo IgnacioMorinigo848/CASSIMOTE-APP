@@ -32,7 +32,7 @@ export default function Profile({ navigation }) {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt) => {
-        if (evt.nativeEvent.touches.length === 3) {
+        if (evt.nativeEvent.touches.length === 1) {
           twoFingerTouch.current = true;
           return true;
         }
@@ -111,7 +111,7 @@ export default function Profile({ navigation }) {
   return (
     <SafeAreaView
       style={styles.container}
-      {...panResponder.current.panHandlers}  // Aquí aplicamos los handlers del gesto
+      {...panResponder.current.panHandlers}  
     >
        <View style={styles.topBarContainer}>
         <View style={styles.profileBarContent}>
@@ -288,6 +288,6 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     width: "100%",
-    paddingBottom: 110
+    marginBottom: 130
   }
 });

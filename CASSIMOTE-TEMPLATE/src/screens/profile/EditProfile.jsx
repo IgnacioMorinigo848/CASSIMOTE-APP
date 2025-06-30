@@ -39,6 +39,7 @@ export default function EditProfile({ navigation }) {
       setProfileImage(imageWithTimestamp);
 
       const { url } = await uploadImage(base64Image);
+      setProfileImage({uri:url})
       console.log("url obtenida", url)
       const { oldUrl } = await updateProfile(token, url);
 
@@ -62,7 +63,7 @@ export default function EditProfile({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.topBarContainer}>
         <View style={styles.row}>
-          <BackButtonComponent navigation={navigation} />
+          <BackButtonComponent navigation={navigation} mode="reset" to="profileFlowStackNavigator" />
           <Text style={styles.title}>Editar Perfil</Text>
         </View>
       </View>
@@ -70,7 +71,7 @@ export default function EditProfile({ navigation }) {
         <View style={styles.buttonProfileContent}>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
              {image ? (
-                <Image style={styles.profileImage} source={{uri:image}} />
+                <Image style={styles.profileImage} source={profileImage} />
               ) : (
                 <Text style={styles.initialsText}>{getInitials(nickName)}</Text>
               )}

@@ -32,7 +32,6 @@ const FilteredResultScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [date,setDate] = useState({press:false,default:"ASC"});
   const [nickname,setNickName] = useState(false);
-  const [recipesCopy,setRecipesCopy] = useState();
   const { token } = useContext(AuthContext);
   const route = useRoute();
   const { recipesName, errorName, option,text="" } = route.params ?? {};
@@ -50,17 +49,20 @@ const FilteredResultScreen = ({ navigation }) => {
         setSearchTerm(text);
       }
     }
-  }, [option, recipesName, errorName,text,recipes]);
+  }, [option, recipesName, errorName,text]);
 
 
 const onderByNickName = () =>{
-  setNickName(true);
-  setRecipesCopy(recipes);
-
+  if(!nickname){
+    setNickName(true)
+    const newRecipe = [...recipes].sort((a, b) => a.nickName.localeCompare(b.nickName));
+    setRecipes(newRecipe);
+  }else{setNickName(false)}
+   setDate({press:false,default:"ASC"});
 };
 
 const orderByDate = () =>{
-  console.log(recipes.creationDate)
+  setNickName(false)
   if((!date.press && date.default === "ASC") || (date.press && date.default === "ASC")){
      const newRecipe = [...recipes].sort((a, b) => new Date(a.creationDate) - new Date(b.creationDate));
     setRecipes(newRecipe);
@@ -148,7 +150,7 @@ const orderByDate = () =>{
             value={searchTerm}
             onChangeText={setSearchTerm}
             searchAction={getSearch}
-            filterAction={() => {setSelected(null);setSearchTerm("");}}
+            filterAction={() => {setRecipes();setSelected(null);setSearchTerm("");}}
           />
         ) : (
           <Text style={styles.headerText}>Selecciona el filtro para empezar</Text>
@@ -189,9 +191,9 @@ const orderByDate = () =>{
               <ProfileRecipeCard
                 key={recipe._id}
                 recipe={recipe}
+                nickName={true} 
                 showDelete={false}
                 navigation={navigation}
-                nickName={true} 
               />
             ))}
         </ScrollView>
