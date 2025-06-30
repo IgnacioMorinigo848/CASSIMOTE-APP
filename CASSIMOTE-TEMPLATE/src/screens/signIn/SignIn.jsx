@@ -12,7 +12,7 @@ export default function SingIn({navigation}){
     const { login } = useContext(AuthContext);
 
     const validate = () => {
-        const newError = validateSignIn({ email,password });
+        const newError = validateSignIn({ email, password });
     setError(newError);
     return Object.keys(newError).length === 0;
     };

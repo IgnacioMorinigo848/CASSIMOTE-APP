@@ -1,6 +1,18 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, BackHandler } from 'react-native';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
-export default function StepThree() {
+export default function Step3({ navigation }) {
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => true; // Previene navegación hacia atrás
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => subscription.remove(); // Aquí se usa remove() para limpiar
+    }, [])
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Crea tu propia receta</Text>
@@ -10,6 +22,19 @@ export default function StepThree() {
           El resto de la comunidad la tendrá disponible luego de ser evaluada por nuestro equipo
         </Text>
       </View>
+      <TouchableOpacity 
+        onPress={() => {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'profileFlowStackNavigator' }],
+            })
+          );
+        }}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Volver al perfil</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -44,5 +69,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     textAlign: 'center',
+  },
+  button: {
+    backgroundColor: '#A450D6',
+    padding: 12,
+    borderRadius: 6,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 });

@@ -30,7 +30,9 @@ const FilteredResultScreen = ({ navigation }) => {
   const [recipes, setRecipes] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  const [date,setDate] = useState({press:false,default:"ASC"});
+  const [nickname,setNickName] = useState(false);
+  const [recipesCopy,setRecipesCopy] = useState();
   const { token } = useContext(AuthContext);
   const route = useRoute();
   const { recipesName, errorName, option,text="" } = route.params ?? {};
@@ -48,7 +50,27 @@ const FilteredResultScreen = ({ navigation }) => {
         setSearchTerm(text);
       }
     }
-  }, [option, recipesName, errorName,text]);
+  }, [option, recipesName, errorName,text,recipes]);
+
+
+const onderByNickName = () =>{
+  setNickName(true);
+  setRecipesCopy(recipes);
+
+};
+
+const orderByDate = () =>{
+  console.log(recipes.creationDate)
+  if((!date.press && date.default === "ASC") || (date.press && date.default === "ASC")){
+     const newRecipe = [...recipes].sort((a, b) => new Date(a.creationDate) - new Date(b.creationDate));
+    setRecipes(newRecipe);
+    setDate({press:true,default:"DESC"})
+  }else{
+    const newRecipe = [...recipes].sort((a, b) =>new Date(b.creationDate) - new Date(a.creationDate));
+    setRecipes(newRecipe);
+    setDate({press:true,default:"ASC"}) 
+  }
+};
 
   const getSearch = async () => {
     if (selected === null || !searchTerm.trim()) return;
@@ -146,13 +168,13 @@ const FilteredResultScreen = ({ navigation }) => {
 
         {selected !== null && (
           <View style={{ gap: 10 }}>
-            <TouchableOpacity style={styles.sortButton}>
+            <TouchableOpacity style={styles.sortButton} onPress={()=>orderByDate()}>
               <Ionicons name="swap-vertical" size={18} color="#888" />
               <Text style={styles.sortText}>Ordenar por antigüedad</Text>
             </TouchableOpacity>
 
             {(selected !== 0 && selected !== 1) && (
-              <TouchableOpacity style={styles.sortButton}>
+              <TouchableOpacity style={styles.sortButton} onPress={()=> onderByNickName()}>
                 <Ionicons name="person" size={18} color="#888" />
                 <Text style={styles.sortText}>Ordenar por nombre de usuario</Text>
               </TouchableOpacity>
@@ -161,7 +183,7 @@ const FilteredResultScreen = ({ navigation }) => {
         )}
 
         <ScrollView style={styles.scrollContainer}>
-          {error && <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>}
+          {error && <Text style={{ color: 'black', textAlign: 'center' }}>{error}</Text>}
           {!error && recipes &&
             recipes.map((recipe) => (
               <ProfileRecipeCard
@@ -169,6 +191,7 @@ const FilteredResultScreen = ({ navigation }) => {
                 recipe={recipe}
                 showDelete={false}
                 navigation={navigation}
+                nickName={true} 
               />
             ))}
         </ScrollView>

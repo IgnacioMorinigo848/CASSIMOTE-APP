@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, Image,KeyboardAvoidingView,TouchableWithoutFeedback,Keyboard,Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect, useContext } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -216,6 +216,13 @@ export default function StepTwo() {
   };
 
   return (
+   
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={80} // Puedes ajustar este valor según tu layout
+      >
     <ScrollView style={styles.container}>
       <Text style={styles.label}>Imagen</Text>
       {fieldErrors.image ? <Text style={styles.error}>{fieldErrors.image}</Text> : null}
@@ -331,6 +338,9 @@ export default function StepTwo() {
         <Text style={styles.saveText}>Guardar y continuar</Text>
       </TouchableOpacity>
     </ScrollView>
+    </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
+    
   );
 }
 

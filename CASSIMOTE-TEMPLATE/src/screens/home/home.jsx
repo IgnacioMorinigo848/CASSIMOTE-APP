@@ -26,6 +26,7 @@ export default function Home({navigation}) {
   const categories = [diet, timeSpent, ability];
 
   const getSearch = async (searchTerm) => {
+    if(searchTerm){
   setLoadingSearch(true);
   const result = await searchByName(token, searchTerm);
   setLoadingSearch(false);
@@ -46,6 +47,7 @@ export default function Home({navigation}) {
     });
   }
    setSearchTerm("")
+}
 };
 
   return (
@@ -54,7 +56,7 @@ export default function Home({navigation}) {
         <SearchBar 
         value={searchTerm}
         onChangeText={(text) => {setSearchTerm(text)}}
-        searchAction={()=>{getSearch(searchTerm)}} 
+        searchAction={()=>{ getSearch(searchTerm)}} 
        filterAction={()=> {navigation.navigate("filteredResults")}}
         />
       {lastThreeRecipes?.success && (

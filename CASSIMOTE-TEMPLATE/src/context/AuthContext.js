@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       const resp = data.data.signIn;
 
       if (resp.success) {
-        const userData = { email };
+        const userData = {email };
         setToken(resp.token);
         setUser(userData);
 

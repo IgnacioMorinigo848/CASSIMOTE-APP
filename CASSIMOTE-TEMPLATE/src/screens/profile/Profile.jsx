@@ -32,7 +32,7 @@ export default function Profile({ navigation }) {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt) => {
-        if (evt.nativeEvent.touches.length === 1) {
+        if (evt.nativeEvent.touches.length === 3) {
           twoFingerTouch.current = true;
           return true;
         }
@@ -156,7 +156,7 @@ export default function Profile({ navigation }) {
         <TouchableOpacity style={styles.createRecipeButton} onPress={() => navigation.navigate("createRecipe")}>
           <Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text>
         </TouchableOpacity>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <ScrollView style={styles.scrollContainer}>
           {recipeData.map((recipe, index) => (
             <ProfileRecipeCard
               key={recipe._id}
