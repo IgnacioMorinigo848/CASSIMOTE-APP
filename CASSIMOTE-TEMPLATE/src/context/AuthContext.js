@@ -12,14 +12,13 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true); // inicia en true hasta verificar token
 
-  const login = async (nickName, email, password) => {
+  const login = async (email, password, rememberMe = false) => {
     const query = `
-      mutation signIn($nickName: String!, $email: String!, $password: String!) {
-        signIn(nickName: $nickName, email: $email, password: $password) {
+      mutation signIn($email: String!, $password: String!) {
+        signIn(email: $email, password: $password) {
           success
           token
           errors {
-            nickName
             email
             password
           }
@@ -27,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       }
     `;
 
-    const variables = { nickName, email, password };
+    const variables = { email, password };
 
     try {
       const response = await axios.post(
@@ -45,12 +44,14 @@ export const AuthProvider = ({ children }) => {
       const resp = data.data.signIn;
 
       if (resp.success) {
-        const userData = { nickName, email };
+        const userData = { email };
         setToken(resp.token);
         setUser(userData);
 
-        await AsyncStorage.setItem('token', resp.token);
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
+        if (rememberMe) {
+          await AsyncStorage.setItem('token', resp.token);
+          await AsyncStorage.setItem('user', JSON.stringify(userData));
+        }
 
         return {
           success: true,
@@ -75,12 +76,16 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('user');
+    await AsyncStorage.removeItem('rememberMe');
     setToken(null);
     setUser(null);
+    
   };
 
   const checkLoginStatus = async () => {
-    try {
+  try {
+    const rememberMe = await AsyncStorage.getItem('rememberMe');
+    if (rememberMe === 'true') {
       const storedToken = await AsyncStorage.getItem('token');
       const storedUser = await AsyncStorage.getItem('user');
 
@@ -91,12 +96,18 @@ export const AuthProvider = ({ children }) => {
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
-    } catch (err) {
-      console.error('Error cargando estado de sesión:', err);
-    } finally {
-      setLoading(false);
+    } else {
+      // Si no quiso ser recordado, borramos todo
+      await AsyncStorage.multiRemove(['token', 'user']);
+      setToken(null);
+      setUser(null);
     }
-  };
+  } catch (err) {
+    console.error('Error cargando estado de sesión:', err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     checkLoginStatus();
