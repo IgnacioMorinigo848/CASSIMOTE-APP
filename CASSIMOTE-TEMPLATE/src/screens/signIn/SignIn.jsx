@@ -3,37 +3,53 @@ import { View, Text,SafeAreaView, StyleSheet,Platform,StatusBar  } from "react-n
 import {ButtonComponent,ButtonBack,InputComponent,RadioButton,validateSignIn} from "./index";
 import {AuthContext} from "../../context/AuthContext"
 import { CommonActions } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SingIn({navigation}){
     const [email, setEmail] = useState("");
-    const [nickName, setNickName] = useState("");
     const [password, setPassword] = useState("");
     const [error,setError] = useState({});
     const [selected, setSelected] = useState(false);
     const { login } = useContext(AuthContext);
 
     const validate = () => {
-        const newError = validateSignIn({ email, nickName, password });
+        const newError = validateSignIn({ email, password });
     setError(newError);
     return Object.keys(newError).length === 0;
     };
 
     const handleLogin = async () => {
-    if (validate()){
-      const result = await login(nickName, email, password);
-        if (result.success) {
-          navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'home' }],
-          })
-        );
-        } else {
-          setError(result.message);
-          console.log(result.message)
+  if (validate()) {
+    const result = await login(email, password, selected);
+
+    if (result.success) {
+      // ✅ Guardar las credenciales solo si se marcó "Recuérdame"
+      if (selected) {
+        try {
+          await AsyncStorage.setItem('rememberMe', JSON.stringify(selected));
+          await AsyncStorage.setItem('email', email);
+          await AsyncStorage.setItem('password', password);
+          console.log("Exitoso")
+        } catch (e) {
+          console.log("Error guardando sesión:", e);
         }
+      } else {
+        // Limpiar si no está marcado
+        await AsyncStorage.multiRemove(['rememberMe', 'email', 'password']);
+      }
+
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'home' }],
+        })
+      );
+    } else {
+      setError(result.message);
+      console.log(result.message);
     }
-    };
+  }
+};
 
     return (
         <SafeAreaView style={styles.container}>
@@ -41,13 +57,6 @@ export default function SingIn({navigation}){
             <View style={styles.content}>
                 <Text style={styles.title}>Iniciar Sesion</Text>
                 <View style={styles.input}>
-                    <InputComponent
-                        value={nickName}
-                        onChangeText={setNickName}
-                        placeholder="Alias"
-                        error={error.nickName}
-                        showValidationIcon={false}
-                    />
                     <InputComponent
                         value={email}
                         onChangeText={setEmail}
