@@ -3,9 +3,15 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Linking, Platform } from 'react-native';
 
+export default function StepFour({ navigation,route }) {
 
-export default function StepFour({ route }) {
-  const navigation = useNavigation();
+  const {recipe,mode} = route.params
+
+
+
+  const saveChange = () =>{
+     navigation.navigate("home")
+  };
  
   const handleSave = () => {
     Alert.alert("Cambios guardados localmente");
@@ -20,6 +26,9 @@ export default function StepFour({ route }) {
   }
 };
 
+const saveChanges = () =>{
+
+}
 
   return (
     <View style={styles.container}>
@@ -40,8 +49,8 @@ export default function StepFour({ route }) {
           <Text style={styles.btnText}>Guardar Cambios</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.btn} onPress={handleChangeNetwork}>
-          <Text style={styles.btnText}>Cambiar Red</Text>
+        <TouchableOpacity style={styles.btn} onPress={navigation.goBack()}>
+          <Text style={styles.btnText}>Volver</Text>
         </TouchableOpacity>
 
       </View>

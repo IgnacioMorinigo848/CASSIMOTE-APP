@@ -17,7 +17,7 @@ import NetInfo from '@react-native-community/netinfo';
 export default function StepTwo() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { mode = 'CREATE', recipe,activate=false,id="" } = route.params || {};
+  const { mode = 'CREATE', recipe,activate=false,id=""} = route.params || {};
   const [name, setName] = useState("");
   const [description, setDescription] = useState('');
   const [portions, setPortions] = useState(1);
@@ -212,9 +212,9 @@ export default function StepTwo() {
       payload.recipeToReplace = commonData;
 
     }
-    const netState = await NetInfo.fetch(); //CAMBIO NOINTERNET: CAMBIAR POR EL load(commonData,mode)  Y navigation.navigate('stepThree', { mode, ...payload });
+    const netState = await NetInfo.fetch();
 if (!netState.isConnected) {
-  navigation.navigate('stepFour', {recipe:commonData,mode});
+  navigation.navigate('stepFour', {recipe:commonData,mode,draft});
   return;
 }
 

@@ -17,10 +17,12 @@ export default function Profile({ navigation }) {
   const { data, loading, error } = useProfileData(token);
   const { dataProfile, loadingProfile, errorProfile } = useGetProfileData(token);
   const [recipeData, setRecipeData] = useState([]);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
     if (!loading && data) {
-      setRecipeData(data);
+      if(!active)
+        setRecipeData(data);
     }
     if (!loading && data) console.log("🟢 HOME DATA:", data);
     if (error || errorProfile) console.error("🔴 ERROR AL CARGAR HOME:", error || errorProfile);
@@ -28,6 +30,19 @@ export default function Profile({ navigation }) {
 
 
   const twoFingerTouch = useRef(false);
+
+
+  const showDraft = () =>{
+    if(!active){
+      {console.log("estamos en borrador")}
+      setRecipeData(null)
+      setActive(!active)
+    }else{
+      setActive(!active)
+      if(data && !loading)
+        setRecipeData(data)
+    }
+  }
 
   const panResponder = useRef(
     PanResponder.create({
@@ -148,6 +163,11 @@ export default function Profile({ navigation }) {
           <Text>Mis Preferencias</Text>
         </TouchableOpacity>
       </View>
+      <View style={styles.preferencesContainer}>
+        <TouchableOpacity style={styles.preferencesButton} onPress={() => showDraft()}>
+          <Text>Borrador</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.recipeContainer}>
         <View style={styles.recipeTextContainer}>
@@ -157,7 +177,7 @@ export default function Profile({ navigation }) {
           <Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text>
         </TouchableOpacity>
         <ScrollView style={styles.scrollContainer}>
-          {recipeData.map((recipe, index) => (
+          {recipeData && recipeData.map((recipe, index) => (
             <ProfileRecipeCard
               key={recipe._id}
               recipe={recipe}
