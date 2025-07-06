@@ -20,9 +20,9 @@ export default function Home({navigation}) {
 
   if (error) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error.message}</Text>;
 
-  const { lastThreeRecipes, diet, timeSpent, ability } = data;
+  const { lastThreeRecipes, diet, timeSpent, ability,typeOfDish } = data;
 
-  const categories = [diet, timeSpent, ability];
+  const categories = [diet, timeSpent, ability,typeOfDish];
 
   const getSearch = async (searchTerm) => {
     if(searchTerm){

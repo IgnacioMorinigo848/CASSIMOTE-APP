@@ -3,8 +3,9 @@ import { View, Text,SafeAreaView, StyleSheet,Platform,StatusBar  } from "react-n
 import {ButtonComponent,ButtonBack,InputComponent,RadioButton,validateSignIn} from "./index";
 import {AuthContext} from "../../context/AuthContext"
 import { CommonActions } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function SingIn({navigation}){
+export default function SignIn({navigation}){
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error,setError] = useState({});
@@ -18,21 +19,37 @@ export default function SingIn({navigation}){
     };
 
     const handleLogin = async () => {
-    if (validate()){
-      const result = await login(email, password);
-        if (result.success) {
-          navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'home' }],
-          })
-        );
-        } else {
-          setError(result.message);
-          console.log(result.message)
+  if (validate()) {
+    const result = await login(email, password, selected);
+
+    if (result.success) {
+      // Guardar las credenciales solo si se marcó "Recuérdame"
+      if (selected) {
+        try {
+          await AsyncStorage.setItem('rememberMe', JSON.stringify(selected));
+          await AsyncStorage.setItem('email', email);
+          await AsyncStorage.setItem('password', password);
+          console.log("Exitoso")
+        } catch (e) {
+          console.log("Error guardando sesión:", e);
         }
+      } else {
+        // Limpiar si no está marcado
+        await AsyncStorage.multiRemove(['rememberMe', 'email', 'password']);
+      }
+
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'home' }],
+        })
+      );
+    } else {
+      setError(result.message);
+      console.log(result.message);
     }
-    };
+  }
+};
 
     return (
         <SafeAreaView style={styles.container}>

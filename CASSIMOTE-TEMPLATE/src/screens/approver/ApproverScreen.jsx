@@ -53,7 +53,6 @@ export default function ApproverScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* HEADER con botón de retroceso y título */}
       <View style={styles.header}>
         <BackButtonComponent navigation={navigation} mode="reset" to="profileFlowStackNavigator" />
         <Text style={styles.title}>Administrador</Text>

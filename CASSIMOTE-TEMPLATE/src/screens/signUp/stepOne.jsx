@@ -1,11 +1,13 @@
-import { View, SafeAreaView, StyleSheet, Platform, StatusBar, TouchableOpacity } from "react-native";
+import { View, SafeAreaView, StyleSheet, Platform, StatusBar, TouchableOpacity, ScrollView } from "react-native";
 import InputComponent from '../../components/InputComponent';
 import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import ButtonBack from '../../components/BackButtonComponent';
 import { useStepOneForm } from "../../hooks/USER-SERVICE/signUp/useStepOneForm";
 import { useNicknameSuggestions } from "../../hooks/USER-SERVICE/signUp/nicknameSuggestions";
-import { useEffect } from "react";
+import releaseAccount from "../../hooks/USER-SERVICE/signUp/releaseAccount" 
+import { useEffect,useState } from "react";
+import TemporaryAlert from "../../components/TemporyAlert";
 
 export default function StepOne({ navigation }) {
   const {
@@ -21,13 +23,33 @@ export default function StepOne({ navigation }) {
     getEmailError
   } = useStepOneForm(navigation);
 
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+
   const {
     suggestions,
     loadingSuggestions,
     fetchSuggestions
   } = useNicknameSuggestions();
 
-  // Buscar sugerencias si existe nickname
+
+  const handleRealeaseAccount = async () => {
+  const resultRealease = await releaseAccount(email); 
+  console.log(resultRealease)
+  if (resultRealease?.success) {
+    setAlertMessage("Cuenta liberada con éxito.");
+  } else {
+    setAlertMessage("Error al liberar la cuenta. Intentalo más tarde.");
+  }
+
+  setShowAlert(true);
+
+  setTimeout(() => {
+    setShowAlert(false);
+    setAlertMessage(""); 
+  }, 2000);
+};
+
   useEffect(() => {
     if (exist && nickName.trim().length > 0) {
       fetchSuggestions(nickName);
@@ -38,8 +60,12 @@ export default function StepOne({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ButtonBack navigation={navigation} mode="reset" to="welcome" icon="x" />
-      <View style={styles.content}>
+      <ScrollView
+      style={styles.content}
+       contentContainerStyle={styles.contentContainer}
+      >
+        <ButtonBack navigation={navigation} mode="reset" to="welcome" icon="x" />
+      <View style={styles.title}>
         <TextComponent type="title">Casiimote</TextComponent>
         <TextComponent type="info">
           Guarda tus objetivos y preferencias para sacar el máximo provecho.
@@ -82,11 +108,15 @@ export default function StepOne({ navigation }) {
         <ButtonComponent width="65%" color="#26355D" onPress={handleSubmit} disabled={loading}>
           {loading ? "Cargando..." : "SIGUIENTE"}
         </ButtonComponent>
-
+        {error && error?.statusRegistration && (
+          <ButtonComponent width="65%" color="#AF47D2" backgroundColor="#FFDB00" onPress={handleRealeaseAccount}>LIBERAR EMAIL / SOPORTE</ButtonComponent>
+        )}
         <TextComponent type="footer" onPress={() => navigation.navigate("signIn")}>
           ¿Ya tenés una cuenta?
         </TextComponent>
       </View>
+      </ScrollView>
+      <TemporaryAlert visible={showAlert} message={alertMessage} />
     </SafeAreaView>
   );
 }
@@ -98,7 +128,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-  content: {
+  content:{
+    flex:1,
+    width:"100%",
+  },
+  contentContainer:{
+    alignItems:"center"
+  },
+  title: {
     flex: 1,
     marginTop: "20%",
     width: "90%",

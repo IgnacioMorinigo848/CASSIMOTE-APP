@@ -10,9 +10,11 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true); // inicia en true hasta verificar token
+  const [loading, setLoading] = useState(true); 
+  const [preferences, setPreferences] = useState(null);
+  const [nickName, setNickName] = useState();
 
-  const login = async (email, password) => {
+  const login = async (email, password, rememberMe = false) => {
     const query = `
       mutation signIn($email: String!, $password: String!) {
         signIn(email: $email, password: $password) {
@@ -44,12 +46,14 @@ export const AuthProvider = ({ children }) => {
       const resp = data.data.signIn;
 
       if (resp.success) {
-        const userData = {email };
+        const userData = { email };
         setToken(resp.token);
         setUser(userData);
 
-        await AsyncStorage.setItem('token', resp.token);
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
+        if (rememberMe) {
+          await AsyncStorage.setItem('token', resp.token);
+          await AsyncStorage.setItem('user', JSON.stringify(userData));
+        }
 
         return {
           success: true,
@@ -74,12 +78,16 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('user');
+    await AsyncStorage.removeItem('rememberMe');
     setToken(null);
     setUser(null);
+    
   };
 
   const checkLoginStatus = async () => {
-    try {
+  try {
+    const rememberMe = await AsyncStorage.getItem('rememberMe');
+    if (rememberMe === 'true') {
       const storedToken = await AsyncStorage.getItem('token');
       const storedUser = await AsyncStorage.getItem('user');
 
@@ -90,12 +98,46 @@ export const AuthProvider = ({ children }) => {
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
-    } catch (err) {
-      console.error('Error cargando estado de sesión:', err);
-    } finally {
-      setLoading(false);
+    } else {
+      // Si no quiso ser recordado, borramos todo
+      await AsyncStorage.multiRemove(['token', 'user']);
+      setToken(null);
+      setUser(null);
     }
+  } catch (err) {
+    console.error('Error cargando estado de sesión:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const loadPreferences = async () =>{
+    try{
+      const storedPreferences = await AsyncStorage.getItem('preferences');
+      if (storedPreferences)
+        setPreferences(JSON.parse(storedPreferences));
+    }catch (err) {
+    console.error('Error cargando preferencias:', err);
+    } 
   };
+
+  const loadNickName = async () =>{
+  try{
+    const storedNickName = await AsyncStorage.getItem('nickName');
+    if(storedNickName)
+      setNickName(storedNickName);
+  } catch (err) {
+    console.error('Error cargando nickName:', err);
+  }
+};
+
+  const deleteRegister = async () =>{
+    await AsyncStorage.removeItem('preferences');
+    await AsyncStorage.removeItem('nickName');
+    setPreferences(null);
+    setNickName(null);
+    
+  }
 
   useEffect(() => {
     checkLoginStatus();
@@ -110,7 +152,14 @@ export const AuthProvider = ({ children }) => {
       loading,
       login,
       logout,
-      setToken
+      setToken,
+      setPreferences,
+      preferences,
+      loadPreferences,
+      nickName,
+      setNickName,
+      loadNickName,
+      deleteRegister
     }}>
       {children}
     </AuthContext.Provider>

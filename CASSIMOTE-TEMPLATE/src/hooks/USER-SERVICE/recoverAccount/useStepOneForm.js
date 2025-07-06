@@ -27,7 +27,7 @@ export const useStepOneForm = (navigation) => {
       const result = await getCode(email);
       if (result?.success) {
           setToken(result.message);
-          navigation.navigate("stepTwo");
+          navigation.navigate("stepTwo",{email:email});
       } else {
         setError(result.message)
       }
