@@ -12,6 +12,7 @@ import { AuthContext } from '../../context/AuthContext';
 import uploadImage from '../../api/IMAGE-SERVICE/uploadImage';
 import * as FileSystem from 'expo-file-system';
 import existNameForUpdate from '../../api/RECIPE-SERVICE/createRecipe/existNameForUpdate';
+import NetInfo from '@react-native-community/netinfo';
 
 export default function StepTwo() {
   const navigation = useNavigation();
@@ -209,11 +210,19 @@ export default function StepTwo() {
       }
     if (mode === 'REPLACE'){
       payload.recipeToReplace = commonData;
-    
+
     }
-    load(commonData,mode) 
-    navigation.navigate('stepThree', { mode, ...payload });
+    const netState = await NetInfo.fetch(); //CAMBIO NOINTERNET: CAMBIAR POR EL load(commonData,mode)  Y navigation.navigate('stepThree', { mode, ...payload });
+if (!netState.isConnected) {
+  navigation.navigate('stepFour', {recipe:commonData,mode});
+  return;
+}
+
+await load(commonData, mode);
+navigation.navigate('stepThree', { mode, ...payload });
+
   };
+
 
   return (
    

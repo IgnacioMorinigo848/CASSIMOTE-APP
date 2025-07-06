@@ -20,7 +20,7 @@ export default function EditProfile({ navigation }) {
   const { token } = useContext(AuthContext);
   const route = useRoute();
 
-  const {image,nickName} = route.params;
+  const {image="",nickName} = route.params;
 
   useEffect(() => {
     setProfileImage({uri:image});
@@ -46,7 +46,7 @@ export default function EditProfile({ navigation }) {
         await deleteImage(oldUrl, token);
       }
     } catch (error) {
-      console.error('🔴 Error al actualizar imagen:', error.message);
+      console.error('Error al actualizar imagen:', error.message);
     }
   };
 
@@ -70,11 +70,12 @@ export default function EditProfile({ navigation }) {
         <View style={styles.buttonProfileContent}>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
             <View style={styles.imageContent}>
-             {profileImage ? (
+             {profileImage?.uri && profileImage.uri !== "" ? (
                 <Image style={styles.profileImage} source={profileImage} />
               ) : (
                 <Text style={styles.initialsText}>{getInitials(nickName)}</Text>
               )}
+
               </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>

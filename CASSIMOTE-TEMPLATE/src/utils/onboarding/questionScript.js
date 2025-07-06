@@ -1,5 +1,6 @@
 export default questions = [
   {
+    label:"Habilidad en la Cocina",
     question: "Cuál es tu habilidad en la cocina ?",
     options: [
       { label: "Bajo (recién empiezo)", value: "bajo" },
@@ -8,6 +9,7 @@ export default questions = [
     ]
   },
   {
+    label:"Tipo de Plato",
     question: "Qué tipo de plato te representa?",
     options: [
       { label: "Pastas", value: "Pastas" },
@@ -18,6 +20,7 @@ export default questions = [
     ]
   },
   {
+    label:"Tipo de Dieta",
     question: "Qué tipo de dieta te representa?",
     options: [
       { label: "Omnívoro", value: "Omnivoro" },
@@ -28,6 +31,7 @@ export default questions = [
     ]
   },
   {
+    label:"Alergia",
     question: "Tenés alguna alergia o intolerancia?",
     options: [
       { label: "Huevos", value: "Huevos" },
@@ -39,6 +43,7 @@ export default questions = [
     ]
   },
   {
+    label:"Tiempo en la Cocina",
     question: "Cuánto tiempo sueles dedicarle a cocinar?",
     options: [
       {
