@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }) => {
       );
 
       const data = response.data;
+      console.log(data)
 
       if (data.errors) {
         throw new Error(data.errors[0]?.message || 'Error en la respuesta del servidor');
