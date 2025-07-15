@@ -177,6 +177,7 @@ export default function Profile({ navigation }) {
           <Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text>
         </TouchableOpacity>
         <ScrollView style={styles.scrollContainer}>
+          <View style={styles.scrollContent}>
           {recipeData && recipeData.map((recipe, index) => (
             <ProfileRecipeCard
               key={recipe._id}
@@ -189,6 +190,7 @@ export default function Profile({ navigation }) {
               source={"profile"}
             />
           ))}
+          </View>
         </ScrollView>
       </View>
 
@@ -309,5 +311,9 @@ const styles = StyleSheet.create({
   scrollContainer: {
     width: "100%",
     marginBottom: 130
+  },
+  scrollContent:{
+    width:"100%",
+    alignItems:"center"
   }
 });
