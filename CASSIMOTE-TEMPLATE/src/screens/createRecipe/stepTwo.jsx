@@ -121,11 +121,18 @@ export default function StepTwo() {
     }
 
     
-      if (!name.trim()) {
-        newErrors.name = 'El nombre es obligatorio';
-        hasError = true;
+       if(activate){
+      const response = await verifyName();
+      if(response){
+        console.log(response)
+        newErrors.name = response;
+        hasError=true;
       }
-    
+      if(!name){
+        newErrors.name = "El name es obligatoria";
+        hasError=true;
+      }
+    }
 
     if (!image) {
       newErrors.image = 'Se debe seleccionar una imagen';
