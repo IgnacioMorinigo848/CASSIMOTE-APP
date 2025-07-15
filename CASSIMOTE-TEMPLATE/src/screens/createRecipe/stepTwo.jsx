@@ -19,6 +19,7 @@ import NetInfo from '@react-native-community/netinfo';
 import SelectionComponent from './SelectionComponent';
 import questions from '../../utils/onboarding/questionScript';
 import prepareRecipeForSend from '../../helper/prepareRecipeForSend';
+import updateRecipe from '../../api/RECIPE-SERVICE/createRecipe/updateRecipe';
 
 export default function StepTwo() {
   const navigation = useNavigation();
@@ -58,6 +59,8 @@ export default function StepTwo() {
       setMinutes(recipe.time || 0);
       setDiet(recipe.typeOfDiet || '');
       setTypeOfDish(recipe.typeOfDish || '');
+    }else{
+      setName(recipe.name || '');
     }
   }, [mode, recipe]);
 
@@ -117,17 +120,12 @@ export default function StepTwo() {
       hasError = true;
     }
 
-    if (activate) {
-      const response = await verifyName();
-      if (response) {
-        newErrors.name = response;
-        hasError = true;
-      }
+    
       if (!name.trim()) {
         newErrors.name = 'El nombre es obligatorio';
         hasError = true;
       }
-    }
+    
 
     if (!image) {
       newErrors.image = 'Se debe seleccionar una imagen';
@@ -176,12 +174,14 @@ export default function StepTwo() {
     setFieldErrors((prev) => ({ ...prev, ...newErrors }));
     if (fieldErrors.diet) hasError = true;
     if (fieldErrors.typeOfDish) hasError = true;
+    console.log(hasError)
     if (hasError) return;
 
     const finalDiet = diet.toLowerCase() === 'otro' ? customDiet.trim() : diet.trim();
     const finalTypeOfDish = typeOfDish.toLowerCase() === 'otro' ? customTypeOfDish.trim() : typeOfDish.trim();
 
     const commonData = {
+      ...(id && { id }),
       name: name?.trim(),
       image: image.uri,
       description: description.trim(),
@@ -201,9 +201,20 @@ export default function StepTwo() {
       navigation.navigate('stepFour', { recipe: commonData, mode, draft });
       return;
     }
-
     console.log("🚀 Datos a enviar:", recipeToSent);
+     console.log("is activate",activate)
+    try {
+  if (activate) {
+    console.log("🛠 Enviando para UPDATE:", recipeToSent);
+    await updateRecipe(recipeToSent, token);
+  } else {
+    console.log("🛠 Enviando para CREATE:", recipeToSent);
     await loadRecipe(recipeToSent, mode, token);
+  }
+  navigation.navigate('stepThree');
+} catch (error) {
+  console.error("🔥 Error en la petición:", error.message || error);
+}
     navigation.navigate('stepThree');
   };
 

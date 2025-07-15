@@ -4,13 +4,8 @@ export default function prepareRecipeForSend(data, ingredients, portion) {
     throw new Error("Datos incompletos para construir la receta.");
   }
 
-  const cleanedIngredients = ingredients.map(({ name, quantity, unit }) => ({
-    name,
-    quantity,
-    unit,
-  }));
-
   const recipeToSend = {
+    ...(data.id && { _id:data.id }),
     name: data.name,
     image: data.image,
     description: data.description,
