@@ -3,14 +3,14 @@ import { View, StyleSheet, Text, TouchableOpacity, Platform, StatusBar, SafeArea
 import QuestionBock from "./QuestionBockComponent.jsx";
 import questions from "../../utils/onboarding/questionScript.js";
 import { useFocusEffect } from "@react-navigation/native";
-import {AuthContext} from "../../context/AuthContext.js";
+import { AuthContext } from "../../context/AuthContext.js";
 
 export default function Onboarding({ navigation }) {
   const [index, setIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [responses, setResponses] = useState([]);
   const [isCurrentAnswerValid, setIsCurrentAnswerValid] = useState(false);
-  const {setPreferences,loadPreferences} = useContext(AuthContext);
+  const { setPreferences, loadPreferences } = useContext(AuthContext);
 
   const handleBack = useCallback(() => {
     if (index > 0) {
@@ -47,25 +47,39 @@ export default function Onboarding({ navigation }) {
         console.log(newResponses); 
         setResponses(newResponses); 
         setPreferences(newResponses);
-        loadPreferences()
+        loadPreferences();
         navigation.navigate("signUpFlowStackNatigator");
       }
     }
   };
 
+  // 👉 Función para agregar "Otro" si allowCustom es true
+  const getOptions = (question) => {
+    if (question.allowCustom) {
+      const exists = question.options?.some(opt => opt.value === "Otro");
+      return exists
+        ? question.options
+        : [...(question.options || []), { label: "Otro", value: "Otro" }];
+    }
+    return question.options || [];
+  };
+
+  const currentQuestion = questions[index];
+  const options = getOptions(currentQuestion);
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.question}>{questions[index].question}</Text>
+      <Text style={styles.question}>{currentQuestion.question}</Text>
       <QuestionBock
-        question={questions[index].question}
-        options={questions[index].options}
+        question={currentQuestion.question}
+        options={options}
         selectedOption={selectedOption}
         onSelect={setSelectedOption}
         onValidChange={setIsCurrentAnswerValid}
       />
       <View style={styles.imformationContainer}>
         <Text style={styles.informationText}>
-          Usamos esta informacion para calcular tus neceidades y que tengas recomendaciones personalizadas
+          Usamos esta información para calcular tus necesidades y que tengas recomendaciones personalizadas
         </Text>
       </View>
       <View style={styles.buttonRow}>
@@ -94,9 +108,9 @@ const styles = StyleSheet.create({
     fontStyle: "bold",
     fontSize: 20,
     lineHeight: 29,
-    fontWeight:800,
+    fontWeight: 800,
     color: "#000000",
-    padding:20
+    padding: 20
   },
   buttonRow: {
     flexDirection: "row",

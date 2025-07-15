@@ -24,8 +24,8 @@ export default function Profile({ navigation }) {
       if(!active)
         setRecipeData(data);
     }
-    if (!loading && data) console.log("🟢 HOME DATA:", data);
-    if (error || errorProfile) console.error("🔴 ERROR AL CARGAR HOME:", error || errorProfile);
+    if (!loading && data) console.log("Profile DATA:", data);
+    if (error || errorProfile) console.error("🔴 ERROR AL CARGAR Profile:", error || errorProfile);
   }, [loading, data, error, dataProfile]);
 
 

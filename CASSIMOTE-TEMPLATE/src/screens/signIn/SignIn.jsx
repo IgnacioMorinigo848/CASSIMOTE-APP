@@ -83,7 +83,7 @@ export default function SignIn({navigation}){
                     </View>
                 </View>
                 <ButtonComponent onPress={handleLogin}>INICIAR SESION</ButtonComponent>
-                <ButtonComponent onPress={()=>{navigation.navigate("signUpFlowStackNatigator")}}>CREAR CUENTA</ButtonComponent>
+                <ButtonComponent onPress={()=>{navigation.navigate("onboarding")}}>CREAR CUENTA</ButtonComponent>
             </View>
         </SafeAreaView>
     );

@@ -11,18 +11,20 @@ export default function prepareRecipeForSend(data, ingredients, portion) {
   }));
 
   const recipeToSend = {
-    recipeId: data._id || data.recipeId, 
     name: data.name,
     image: data.image,
     description: data.description,
-    ingredients: cleanedIngredients,
-    steps: data.steps, 
+    ingredients: ingredients?.map(item => ({
+      name: item.name.trim(),
+      quantity: item.quantity,
+      unit: item.unit.trim()
+    })) || [],
+    steps: data.steps?.map(step => ({ description: (step.description || step).trim() })) || [],
     typeOfDish: data.typeOfDish,
     difficulty: data.difficulty,
     typeOfDiet: data.typeOfDiet,
     portions: portion,
     time: data.time,
-    numberOfStart: data.numberOfStart || 0,
   };
 
   return recipeToSend;

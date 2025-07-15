@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, BackHandler } from 'react-nat
 import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-export default function Step3({ navigation }) {
+export default function StepThree({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {

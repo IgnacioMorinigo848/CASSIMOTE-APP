@@ -69,7 +69,7 @@ const useProfileData = (token) => {
         }
       } catch (err) {
         console.error("ERROR en fetchData:", err.message);
-        setError("Ocurrió un error al cargar los datos.");
+        setError("Ocurrió un error al cargar los datos de recetas.");
         setData(null);
         setIsSuccess(false);
       } finally {

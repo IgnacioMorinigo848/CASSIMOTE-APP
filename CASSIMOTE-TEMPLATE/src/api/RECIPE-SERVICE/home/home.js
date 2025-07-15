@@ -85,6 +85,7 @@ const useHomeData = (token) => {
           }
         );
         const homeData = response.data.data.home;
+        console.log(homeData)
         setIsSuccess(homeData);
         setData(homeData);
        
