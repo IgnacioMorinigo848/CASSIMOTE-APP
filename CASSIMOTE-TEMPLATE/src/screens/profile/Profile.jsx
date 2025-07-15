@@ -171,7 +171,7 @@ export default function Profile({ navigation }) {
 
       <View style={styles.recipeContainer}>
         <View style={styles.recipeTextContainer}>
-          <Text style={styles.recipeText}>Mis Recetas</Text>
+          <Text style={styles.recipeText}>{active ? "Borrador":"Mis Recetas"}</Text>
         </View>
         <TouchableOpacity style={styles.createRecipeButton} onPress={() => navigation.navigate("createRecipe")}>
           <Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text>
