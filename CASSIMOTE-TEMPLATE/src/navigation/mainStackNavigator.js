@@ -4,7 +4,7 @@ import Home from "../screens/home/home.jsx";
 import Welcome from "../screens/welcome/welcome.jsx";
 import Onboarding from "../screens/onboarding/Onboarding.jsx";
 import SignUpFlowStackNatigator from "../navigation/signUpFlowStackNavigator.js"
-import SingIn from "../screens/signIn/SignIn.jsx";
+import SignIn from "../screens/signIn/SignIn.jsx";
 import RecoverAccountFlowStackNavigator from "../navigation/recoverAccountFlowStackNavigator.js";
 import ProfileFlowStackNavigator from "../navigation/profileFlowStackNavigator.js";
 import FilteredResultsScreen from '../screens/filter/FilteredResultsScreen.jsx';
@@ -37,7 +37,7 @@ export default function mainStackNavigator() {
             <Stack.Screen name="welcome" component={Welcome} options={{ headerShown: false }}/>
             <Stack.Screen name="home" component={Home} options={{ headerShown: false }}/>
             <Stack.Screen name="onboarding" component={Onboarding}/>
-            <Stack.Screen name="signIn" component={SingIn} options={{headerShown:false}}/>
+            <Stack.Screen name="signIn" component={SignIn} options={{headerShown:false}}/>
             <Stack.Screen name="signUpFlowStackNatigator" component={SignUpFlowStackNatigator} options={{headerShown:false}}/>
             <Stack.Screen name="recoverAccountFlowStackNavigator" component={RecoverAccountFlowStackNavigator} options={{headerShown:false}}/>
             <Stack.Screen name="profileFlowStackNavigator" component={ProfileFlowStackNavigator} options={{headerShown:false,gestureEnabled: false }}/>

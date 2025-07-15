@@ -9,7 +9,7 @@ export const useStepOneForm = (navigation) => {
   const [error, setError] = useState({});
   const [exist,setExist] = useState(false);
   const [loading,setLoading] = useState(false);
-  const { setToken } = useContext(AuthContext);
+  const { setToken,setNickName:setNickNameAuth,loadNickName } = useContext(AuthContext);
 
   const validate = () => {
     const newError = {};
@@ -37,7 +37,9 @@ export const useStepOneForm = (navigation) => {
       } else if (result?.success) {
         if (result.type === 'token') {
           setToken(result.token);
-          navigation.navigate("stepTwo");
+          setNickNameAuth(nickName);
+          loadNickName();
+          navigation.navigate("stepTwo",{email:email});
         }
       } else {
         setError({ general: result?.message || "Error desconocido." });

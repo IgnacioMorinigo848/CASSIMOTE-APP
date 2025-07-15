@@ -46,14 +46,14 @@ const searchByName = async (token, searchText) => {
     if (result.__typename === 'searchRecipe') {
       return {
         success: result.success,
-        message: result.message1,
+        message: result.recipeMessage,
         recipes: result.recipes,
       };
     }
 
     return {
       success: false,
-      message: result.message2,
+      message: result.errorMessage,
     };
 
   } catch (error) {

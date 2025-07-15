@@ -41,13 +41,17 @@ export default function StepOne({ navigation }) {
       case 'Reemplazar Existente':
         navigation.navigate('stepTwo', {
           mode: 'REPLACE',
-          recipe: baseRecipe
+          recipe: baseRecipe,
+          activate:false,
+          id:""
         });
         break;
       case 'Editar Existente':
         navigation.navigate('stepTwo', {
           mode: 'UPDATE',
-          recipe: baseRecipe
+          recipe: baseRecipe,
+          activate:false,
+          id:""
         });
         break;
       default:
@@ -138,7 +142,9 @@ export default function StepOne({ navigation }) {
             recipe: {
               name: recipeData.name,
               nickName: recipeData.nickName, 
-            }
+            },
+            activate:false,
+            id:""
           })}
         >
           <Text style={styles.nextText}>Crear receta</Text>

@@ -1,6 +1,9 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, Image } from 'react-native';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import {
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput,
+  Image, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect, useContext } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import InputField from '../../components/InputField';
 import PlusMinusButton from '../../components/PlusMinusButton';
@@ -12,12 +15,17 @@ import { AuthContext } from '../../context/AuthContext';
 import uploadImage from '../../api/IMAGE-SERVICE/uploadImage';
 import * as FileSystem from 'expo-file-system';
 import existNameForUpdate from '../../api/RECIPE-SERVICE/createRecipe/existNameForUpdate';
+import NetInfo from '@react-native-community/netinfo';
+import SelectionComponent from './SelectionComponent';
+import questions from '../../utils/onboarding/questionScript';
+import prepareRecipeForSend from '../../helper/prepareRecipeForSend';
+import updateRecipe from '../../api/RECIPE-SERVICE/createRecipe/updateRecipe';
 
 export default function StepTwo() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { mode = 'CREATE', recipe,activate=false,id="" } = route.params || {};
-  const [name, setName] = useState("");
+  const { mode = 'CREATE', recipe, activate = false, id = '' } = route.params || {};
+  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [portions, setPortions] = useState(1);
   const [ingredients, setIngredients] = useState([{ name: '', quantity: '', unit: '' }]);
@@ -25,36 +33,24 @@ export default function StepTwo() {
   const [difficulty, setDifficulty] = useState('MEDIO');
   const [minutes, setMinutes] = useState(0);
   const [diet, setDiet] = useState('');
+  const [customDiet, setCustomDiet] = useState('');
   const [typeOfDish, setTypeOfDish] = useState('');
+  const [customTypeOfDish, setCustomTypeOfDish] = useState('');
   const [image, setImage] = useState(null);
   const [showImagePicker, setShowImagePicker] = useState(false);
-
+  const [fieldErrors, setFieldErrors] = useState({
+    name: '', image: '', description: '', diet: '', typeOfDish: '', minutes: '',
+    ingredients: [], instructions: [], type: ''
+  });
   const { token } = useContext(AuthContext);
 
-  const [fieldErrors, setFieldErrors] = useState({
-    name:"",
-    image:"",
-    description: '',
-    diet: '',
-    typeOfDish: '',
-    minutes: '',
-    ingredients: [],
-    instructions: [],
-  });
+  const dietRef = useRef();
+  const typeRef = useRef();
 
-  const verifyName = async () =>{
-    const result = await existNameForUpdate(id,name.trim(),token);
-    if(result?.success){
-      let message = result?.message;
-      console.log(message)
-      return message;
-    }
-  };
-
-   useEffect(() => {
+  useEffect(() => {
     if (mode !== 'CREATE' && mode !== 'REPLACE' && recipe) {
-      setName(recipe.name || "");
-      setImage({uri:recipe.image} || '');
+      setName(recipe.name || '');
+      setImage({ uri: recipe.image } || '');
       setDescription(recipe.description || '');
       setPortions(recipe.portions || 1);
       setIngredients(recipe.ingredients || [{ name: '', quantity: '', unit: '' }]);
@@ -63,24 +59,23 @@ export default function StepTwo() {
       setMinutes(recipe.time || 0);
       setDiet(recipe.typeOfDiet || '');
       setTypeOfDish(recipe.typeOfDish || '');
+    }else{
+      setName(recipe.name || '');
     }
   }, [mode, recipe]);
 
-   const onImageSelected = async (imageUri) => {
-  try {
-    const base64String = await FileSystem.readAsStringAsync(imageUri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-
-    const base64Image = `data:image/jpeg;base64,${base64String}`;
-    const { url } = await uploadImage(base64Image);
-    console.log("nueva url", url)
-    setImage({uri: url });
-    
-  } catch (error) {
-    console.error('Error al actualizar imagen:', error.message);
-  }
-};
+  const onImageSelected = async (imageUri) => {
+    try {
+      const base64String = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const base64Image = `data:image/jpeg;base64,${base64String}`;
+      const { url } = await uploadImage(base64Image);
+      setImage({ uri: url });
+    } catch (error) {
+      console.error('Error al actualizar imagen:', error.message);
+    }
+  };
 
   const addIngredient = () => setIngredients([...ingredients, { name: '', quantity: '', unit: '' }]);
   const updateIngredient = (index, updated) => {
@@ -106,24 +101,27 @@ export default function StepTwo() {
     }
   };
 
-  const load = async (commonData,option) =>{
-    await loadRecipe(commonData,option,token);
+  const verifyName = async () => {
+    const result = await existNameForUpdate(id, name.trim(), token);
+    return result?.success ? result.message : '';
   };
 
   const validarYContinuar = async () => {
-    const newErrors = {
-      name:"",
-      image:"",
-      description: '',
-      diet: '',
-      typeOfDish: '',
-      minutes: '',
-      ingredients: [],
-      instructions: [],
-    };
     let hasError = false;
+    const newErrors = {
+      name: '', image: '', description: '', minutes: '',
+      ingredients: [], instructions: []
+    };
 
-    if(activate){
+    const isDietValid = dietRef.current?.validate?.() ?? true;
+    const isTypeValid = typeRef.current?.validate?.() ?? true;
+
+    if (!isDietValid || !isTypeValid) {
+      hasError = true;
+    }
+
+    
+       if(activate){
       const response = await verifyName();
       if(response){
         console.log(response)
@@ -136,17 +134,12 @@ export default function StepTwo() {
       }
     }
 
-    if(!image){
-      newErrors.image = "Se debe seleccionar una imagen";
-      hasError=true;
+    if (!image) {
+      newErrors.image = 'Se debe seleccionar una imagen';
+      hasError = true;
     }
     if (!description.trim()) {
       newErrors.description = 'La descripción es obligatoria';
-      hasError = true;
-    }
-
-    if (!diet.trim()) {
-      newErrors.diet = 'El tipo de dieta es obligatorio';
       hasError = true;
     }
 
@@ -167,7 +160,7 @@ export default function StepTwo() {
       newErrors.ingredients = ingredients.map((i) => {
         const err = {};
         if (!i.name?.trim()) err.name = 'Nombre obligatorio';
-        if (i.quantity === '' || i.quantity === null || isNaN(i.quantity)) err.quantity = 'Cantidad inválida';
+        if (i.quantity === '' || isNaN(i.quantity)) err.quantity = 'Cantidad inválida';
         if (!i.unit?.trim()) err.unit = 'Seleccioná una unidad';
         if (Object.keys(err).length > 0) hasError = true;
         return err;
@@ -185,152 +178,181 @@ export default function StepTwo() {
       });
     }
 
-    setFieldErrors(newErrors);
+    setFieldErrors((prev) => ({ ...prev, ...newErrors }));
+    if (fieldErrors.diet) hasError = true;
+    if (fieldErrors.typeOfDish) hasError = true;
+    console.log(hasError)
     if (hasError) return;
 
-  const commonData = {
-  name: recipe?.name,
-  nickName: recipe?.nickName,
-  image:image.uri,
-  description: description.trim(),
-  portions,
-  ingredients,
-  steps: instructions.map(desc => ({ description: desc.trim() })),
-  difficulty,
-  time: minutes,
-  typeOfDiet: diet.trim(),
-  typeOfDish: typeOfDish.trim(),
-};
+    const finalDiet = diet.toLowerCase() === 'otro' ? customDiet.trim() : diet.trim();
+    const finalTypeOfDish = typeOfDish.toLowerCase() === 'otro' ? customTypeOfDish.trim() : typeOfDish.trim();
 
+    const commonData = {
+      ...(id && { id }),
+      name: name?.trim(),
+      image: image.uri,
+      description: description.trim(),
+      portions,
+      ingredients,
+      steps: instructions.map((desc) => ({ description: desc.trim() })),
+      difficulty,
+      time: minutes,
+      typeOfDiet: finalDiet,
+      typeOfDish: finalTypeOfDish,
+    };
 
-    const payload = { newRecipe: commonData };
-    if (mode === 'UPDATE'){
-       payload.updatedRecipe = commonData;
-      }
-    if (mode === 'REPLACE'){
-      payload.recipeToReplace = commonData;
-    
+    const recipeToSent = prepareRecipeForSend(commonData, ingredients, portions);
+    const netState = await NetInfo.fetch();
+
+    if (!netState.isConnected) {
+      navigation.navigate('stepFour', { recipe: commonData, mode, draft });
+      return;
     }
-    load(commonData,mode) 
-    navigation.navigate('stepThree', { mode, ...payload });
+    console.log("🚀 Datos a enviar:", recipeToSent);
+     console.log("is activate",activate)
+    try {
+  if (activate) {
+    console.log("🛠 Enviando para UPDATE:", recipeToSent);
+    await updateRecipe(recipeToSent, token);
+  } else {
+    console.log("🛠 Enviando para CREATE:", recipeToSent);
+    await loadRecipe(recipeToSent, mode, token);
+  }
+  navigation.navigate('stepThree');
+} catch (error) {
+  console.error("🔥 Error en la petición:", error.message || error);
+}
+    navigation.navigate('stepThree');
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.label}>Imagen</Text>
-      {fieldErrors.image ? <Text style={styles.error}>{fieldErrors.image}</Text> : null}
-      {image ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-          <Image source={image} style={styles.imagePreview} />
-          <TouchableOpacity onPress={() => setImage(null)} style={styles.removeImageBtn}>
-            <Ionicons name="trash" size={20} color="black" />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <TouchableOpacity style={styles.addBtn} onPress={() => setShowImagePicker(!showImagePicker)}>
-          <Text style={styles.addBtnText}>+</Text>
-        </TouchableOpacity>
-      )}
-      <GetImageComponent visible={showImagePicker} setVisible={setShowImagePicker} onImageSelected={onImageSelected} />
-
-      {activate && <><Text style={styles.label}>Nombre</Text>
-      <InputField placeholder="Nombre brevemente el plato" value={name} onChangeText={setName} />
-      {fieldErrors.name && <Text style={styles.error}>{fieldErrors.name}</Text>}
-    </>}
-
-      <Text style={styles.label}>Descripción</Text>
-      <InputField placeholder="Describe brevemente el plato" value={description} onChangeText={setDescription} />
-      {fieldErrors.description && <Text style={styles.error}>{fieldErrors.description}</Text>}
-
-      <Text style={styles.label}>Porciones</Text>
-      <View style={styles.row}>
-        <PlusMinusButton symbol="-" onPress={() => setPortions(Math.max(1, portions - 1))} />
-        <Text style={styles.centeredText}>{portions} Porciones</Text>
-        <PlusMinusButton symbol="+" onPress={() => setPortions(portions + 1)} />
-      </View>
-
-      <Text style={styles.label}>Ingredientes</Text>
-      {ingredients.map((item, index) => (
-        <View key={index} style={{ marginBottom: 12 }}>
-          <IngredientInput
-            ingredient={item}
-            onChange={(updated) => updateIngredient(index, updated)}
-            error={fieldErrors.ingredients[index] || {}}
-          />
-          {ingredients.length > 1 && (
-            <TouchableOpacity onPress={() => removeIngredient(index)}>
-              <Text style={styles.removeText}>🗑️ Borrar ingrediente</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView style={styles.container}>
+          <Text style={styles.label}>Imagen</Text>
+          {fieldErrors.image && <Text style={styles.error}>{fieldErrors.image}</Text>}
+          {image ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+              <Image source={image} style={styles.imagePreview} />
+              <TouchableOpacity onPress={() => setImage(null)} style={styles.removeImageBtn}>
+                <Ionicons name="trash" size={20} color="black" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.addBtn} onPress={() => setShowImagePicker(!showImagePicker)}>
+              <Text style={styles.addBtnText}>+</Text>
             </TouchableOpacity>
           )}
-        </View>
-      ))}
-      <TouchableOpacity onPress={addIngredient} style={styles.agregarBtn}>
-        <Ionicons name="add" size={14} />
-        <Text style={styles.agregarBtnText}> Agregar ingrediente</Text>
-      </TouchableOpacity>
+          <GetImageComponent visible={showImagePicker} setVisible={setShowImagePicker} onImageSelected={onImageSelected} />
 
-      <Text style={styles.label}>Instrucciones</Text>
-      {instructions.map((step, index) => (
-        <View key={index} style={{ marginBottom: 12 }}>
-          <InstructionInput
-            value={step}
-            onChange={(text) => updateInstruction(index, text)}
-            error={fieldErrors.instructions[index]}
-          />
-          {instructions.length > 1 && (
-            <TouchableOpacity onPress={() => removeInstruction(index)}>
-              <Text style={styles.removeText}>🗑️ Borrar instrucción</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      ))}
-      <TouchableOpacity onPress={addInstruction} style={styles.agregarBtn}>
-        <Ionicons name="add" size={14} />
-        <Text style={styles.agregarBtnText}> Agregar instrucción</Text>
-      </TouchableOpacity>
+          {activate && <>
+            <Text style={styles.label}>Nombre</Text>
+            <InputField placeholder="Nombre brevemente el plato" value={name} onChangeText={setName} />
+            {fieldErrors.name && <Text style={styles.error}>{fieldErrors.name}</Text>}
+          </>}
 
-      <Text style={styles.label}>Dificultad</Text>
-      <View style={styles.row}>
-        {['BAJO', 'MEDIO', 'ALTO'].map((level) => (
-          <TouchableOpacity
-            key={level}
-            style={[styles.levelBtn, difficulty === level && styles.selectedLevel]}
-            onPress={() => setDifficulty(level)}>
-            <Text>{level}</Text>
+          <Text style={styles.label}>Descripción</Text>
+          <InputField placeholder="Describe brevemente el plato" value={description} onChangeText={setDescription} />
+          {fieldErrors.description && <Text style={styles.error}>{fieldErrors.description}</Text>}
+
+          <Text style={styles.label}>Porciones</Text>
+          <View style={styles.row}>
+            <PlusMinusButton symbol="-" onPress={() => setPortions(Math.max(1, portions - 1))} />
+            <Text style={styles.centeredText}>{portions} Porciones</Text>
+            <PlusMinusButton symbol="+" onPress={() => setPortions(portions + 1)} />
+          </View>
+
+          <Text style={styles.label}>Ingredientes</Text>
+          {ingredients.map((item, index) => (
+            <View key={index} style={{ marginBottom: 12 }}>
+              <IngredientInput ingredient={item} onChange={(updated) => updateIngredient(index, updated)} error={fieldErrors.ingredients[index] || {}} />
+              {ingredients.length > 1 && (
+                <TouchableOpacity onPress={() => removeIngredient(index)}>
+                  <Text style={styles.removeText}>🗑️ Borrar ingrediente</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
+          <TouchableOpacity onPress={addIngredient} style={styles.agregarBtn}>
+            <Ionicons name="add" size={14} />
+            <Text style={styles.agregarBtnText}> Agregar ingrediente</Text>
           </TouchableOpacity>
-        ))}
-      </View>
 
-      <Text style={styles.label}>Tiempo</Text>
-      <View style={styles.row}>
-        <TextInput
-          style={styles.timeInput}
-          placeholder="Minutos"
-          value={minutes.toString()}
-          onChangeText={(text) => {
-            const num = parseInt(text, 10);
-            if (!isNaN(num) && num >= 0) setMinutes(num);
-            else if (text === '') setMinutes(0);
-          }}
-          keyboardType="numeric"
-          maxLength={3}
-        />
-        <Text style={styles.centeredText}>minutos</Text>
-      </View>
-      {fieldErrors.minutes && <Text style={styles.error}>{fieldErrors.minutes}</Text>}
+          <Text style={styles.label}>Instrucciones</Text>
+          {instructions.map((step, index) => (
+            <View key={index} style={{ marginBottom: 12 }}>
+              <InstructionInput value={step} onChange={(text) => updateInstruction(index, text)} error={fieldErrors.instructions[index]} />
+              {instructions.length > 1 && (
+                <TouchableOpacity onPress={() => removeInstruction(index)}>
+                  <Text style={styles.removeText}>🗑️ Borrar instrucción</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
+          <TouchableOpacity onPress={addInstruction} style={styles.agregarBtn}>
+            <Ionicons name="add" size={14} />
+            <Text style={styles.agregarBtnText}> Agregar instrucción</Text>
+          </TouchableOpacity>
 
-      <Text style={styles.label}>Tipo de Dieta</Text>
-      <InputField placeholder="Seleccioná el tipo de Dieta" value={diet} onChangeText={setDiet} />
-      {fieldErrors.diet && <Text style={styles.error}>{fieldErrors.diet}</Text>}
+          <Text style={styles.label}>Dificultad</Text>
+          <View style={styles.row}>
+            {['BAJO', 'MEDIO', 'ALTO'].map((level) => (
+              <TouchableOpacity key={level} style={[styles.levelBtn, difficulty === level && styles.selectedLevel]} onPress={() => setDifficulty(level)}>
+                <Text>{level}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-      <Text style={styles.label}>Tipo de Plato</Text>
-      <InputField placeholder="Seleccioná el tipo de plato" value={typeOfDish} onChangeText={setTypeOfDish} />
-      {fieldErrors.typeOfDish && <Text style={styles.error}>{fieldErrors.typeOfDish}</Text>}
+          <Text style={styles.label}>Tiempo</Text>
+          <View style={styles.row}>
+            <TextInput
+              style={styles.timeInput}
+              placeholder="Minutos"
+              value={minutes.toString()}
+              onChangeText={(text) => {
+                const num = parseInt(text, 10);
+                if (!isNaN(num) && num >= 0) setMinutes(num);
+                else if (text === '') setMinutes(0);
+              }}
+              keyboardType="numeric"
+              maxLength={3}
+            />
+            <Text style={styles.centeredText}>minutos</Text>
+          </View>
+          {fieldErrors.minutes && <Text style={styles.error}>{fieldErrors.minutes}</Text>}
 
-      <TouchableOpacity style={styles.saveBtn} onPress={validarYContinuar}>
-        <Text style={styles.saveText}>Guardar y continuar</Text>
-      </TouchableOpacity>
-    </ScrollView>
+          <Text style={styles.label}>Tipo de Dieta</Text>
+          <SelectionComponent
+            ref={dietRef}
+            options={questions[2].options}
+            defaultValue={diet}
+            fieldKey="diet"
+            fieldErrors={fieldErrors}
+            setFieldErrors={setFieldErrors}
+            onChange={(value) => setDiet(value)}
+            customValue={customDiet}
+            setCustomValue={setCustomDiet}
+          />
+
+          <Text style={styles.label}>Tipo de Plato</Text>
+          <SelectionComponent
+            ref={typeRef}
+            options={questions[1].options}
+            defaultValue={typeOfDish}
+            fieldKey="typeOfDish"
+            fieldErrors={fieldErrors}
+            setFieldErrors={setFieldErrors}
+            onChange={(value) => setTypeOfDish(value)}
+            customValue={customTypeOfDish}
+            setCustomValue={setCustomTypeOfDish}
+          />
+
+          <TouchableOpacity style={styles.saveBtn} onPress={validarYContinuar}>
+            <Text style={styles.saveText}>Guardar y continuar</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -345,11 +367,11 @@ const styles = StyleSheet.create({
   agregarBtnText: { fontSize: 12 },
   levelBtn: { flex: 1, backgroundColor: '#eee', padding: 10, borderRadius: 4, alignItems: 'center' },
   selectedLevel: { backgroundColor: '#DAAEEB' },
-  saveBtn: { backgroundColor: '#A450D6', padding: 16, borderRadius: 8, marginTop: 24,marginBottom:100, alignItems: 'center' },
+  saveBtn: { backgroundColor: '#A450D6', padding: 16, borderRadius: 8, marginTop: 24, marginBottom: 100, alignItems: 'center' },
   saveText: { color: '#fff', fontWeight: 'bold' },
   timeInput: { width: 60, backgroundColor: '#f0f0f0', borderRadius: 4, padding: 10, fontSize: 14, textAlign: 'center' },
   imagePreview: { width: 80, height: 80, borderRadius: 8, marginRight: 10 },
   removeImageBtn: { padding: 6, backgroundColor: '#eee', borderRadius: 8 },
   removeText: { color: '#A450D6', fontSize: 12, marginTop: 4, marginLeft: 4 },
-  error: { color: 'red', fontSize: 12, marginBottom: 6 },
+  error: { color: '#9C1515', fontSize: 12, marginBottom: 6 },
 });

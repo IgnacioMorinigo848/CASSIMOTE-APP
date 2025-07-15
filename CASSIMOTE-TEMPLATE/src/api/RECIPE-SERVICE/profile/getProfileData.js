@@ -42,7 +42,7 @@ const useGetProfileData = (token) => {
         );
 
         const profileData = response.data.data.getProfile;
-        console.log(profileData)
+        console.log("error en getProfile",profileData)
         if (profileData.success) {
             setDataProfile(profileData.profile);
             setErrorProfile(null);
@@ -54,7 +54,7 @@ const useGetProfileData = (token) => {
         }
       } catch (err) {
         console.error("ERROR en fetchData:", err.message);
-        setErrorProfile("Ocurrió un error al cargar los datos.");
+        setErrorProfile("Ocurrió un error al cargar los datos de perfil.");
         setDataProfile(null);
         setIsSuccess(false);
       } finally {

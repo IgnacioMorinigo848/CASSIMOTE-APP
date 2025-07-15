@@ -1,6 +1,35 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Linking, Platform } from 'react-native';
 
-export default function StepFour() {
+export default function StepFour({ navigation,route }) {
+
+  const {recipe,mode} = route.params
+
+
+
+  const saveChange = () =>{
+     navigation.navigate("home")
+  };
+ 
+  const handleSave = () => {
+    Alert.alert("Cambios guardados localmente");
+    // Acá podrías guardar la receta en AsyncStorage o algún storage local
+  };
+
+  const handleChangeNetwork = () => {
+  if (Platform.OS === 'ios') {
+    Linking.openURL('App-Prefs:WIFI');
+  } else {
+    Linking.openSettings();
+  }
+};
+
+const saveChanges = () =>{
+
+}
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Crea tu propia receta</Text>
@@ -16,13 +45,14 @@ export default function StepFour() {
       </View>
 
       <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={styles.btn}>
+        <TouchableOpacity style={styles.btn} onPress={handleSave}>
           <Text style={styles.btnText}>Guardar Cambios</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.btn}>
-          <Text style={styles.btnText}>Cambiar Red</Text>
+        <TouchableOpacity style={styles.btn} onPress={navigation.goBack()}>
+          <Text style={styles.btnText}>Volver</Text>
         </TouchableOpacity>
+
       </View>
     </View>
   );

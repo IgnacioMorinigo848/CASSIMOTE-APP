@@ -5,7 +5,7 @@ import {AuthContext} from "../../context/AuthContext"
 import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function SingIn({navigation}){
+export default function SignIn({navigation}){
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error,setError] = useState({});
@@ -23,7 +23,11 @@ export default function SingIn({navigation}){
     const result = await login(email, password, selected);
 
     if (result.success) {
+<<<<<<< HEAD
       // ✅ Guardar las credenciales solo si se marcó "Recuérdame"
+=======
+      // Guardar las credenciales solo si se marcó "Recuérdame"
+>>>>>>> 7b7f2497d58835f7cdb98f8931e6a4a937a1f8f7
       if (selected) {
         try {
           await AsyncStorage.setItem('rememberMe', JSON.stringify(selected));
@@ -83,7 +87,7 @@ export default function SingIn({navigation}){
                     </View>
                 </View>
                 <ButtonComponent onPress={handleLogin}>INICIAR SESION</ButtonComponent>
-                <ButtonComponent onPress={()=>{navigation.navigate("signUpFlowStackNatigator")}}>CREAR CUENTA</ButtonComponent>
+                <ButtonComponent onPress={()=>{navigation.navigate("onboarding")}}>CREAR CUENTA</ButtonComponent>
             </View>
         </SafeAreaView>
     );

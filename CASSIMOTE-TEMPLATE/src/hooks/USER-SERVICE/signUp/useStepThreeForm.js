@@ -12,7 +12,7 @@ export const useStepThreeForm = (navigation) => {
   const validate = () => {
     const newError = {};
     if (password.length < 8) {
-      newError.password = "Contraseña inválida. Debe tener al menos 6 caracteres.";
+      newError.password = "Contraseña inválida. Debe tener al menos 8 caracteres.";
     }
     setError(newError);
     return Object.keys(newError).length === 0;

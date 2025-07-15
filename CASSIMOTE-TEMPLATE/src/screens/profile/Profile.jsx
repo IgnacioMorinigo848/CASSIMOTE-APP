@@ -17,17 +17,32 @@ export default function Profile({ navigation }) {
   const { data, loading, error } = useProfileData(token);
   const { dataProfile, loadingProfile, errorProfile } = useGetProfileData(token);
   const [recipeData, setRecipeData] = useState([]);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
     if (!loading && data) {
-      setRecipeData(data);
+      if(!active)
+        setRecipeData(data);
     }
-    if (!loading && data) console.log("🟢 HOME DATA:", data);
-    if (error || errorProfile) console.error("🔴 ERROR AL CARGAR HOME:", error || errorProfile);
+    if (!loading && data) console.log("Profile DATA:", data);
+    if (error || errorProfile) console.error("🔴 ERROR AL CARGAR Profile:", error || errorProfile);
   }, [loading, data, error, dataProfile]);
 
 
   const twoFingerTouch = useRef(false);
+
+
+  const showDraft = () =>{
+    if(!active){
+      {console.log("estamos en borrador")}
+      setRecipeData(null)
+      setActive(!active)
+    }else{
+      setActive(!active)
+      if(data && !loading)
+        setRecipeData(data)
+    }
+  }
 
   const panResponder = useRef(
     PanResponder.create({
@@ -111,7 +126,7 @@ export default function Profile({ navigation }) {
   return (
     <SafeAreaView
       style={styles.container}
-      {...panResponder.current.panHandlers}  // Aquí aplicamos los handlers del gesto
+      {...panResponder.current.panHandlers}  
     >
        <View style={styles.topBarContainer}>
         <View style={styles.profileBarContent}>
@@ -148,6 +163,11 @@ export default function Profile({ navigation }) {
           <Text>Mis Preferencias</Text>
         </TouchableOpacity>
       </View>
+      <View style={styles.preferencesContainer}>
+        <TouchableOpacity style={styles.preferencesButton} onPress={() => showDraft()}>
+          <Text>Borrador</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.recipeContainer}>
         <View style={styles.recipeTextContainer}>
@@ -156,8 +176,8 @@ export default function Profile({ navigation }) {
         <TouchableOpacity style={styles.createRecipeButton} onPress={() => navigation.navigate("createRecipe")}>
           <Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text>
         </TouchableOpacity>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {recipeData.map((recipe, index) => (
+        <ScrollView style={styles.scrollContainer}>
+          {recipeData && recipeData.map((recipe, index) => (
             <ProfileRecipeCard
               key={recipe._id}
               recipe={recipe}
@@ -288,6 +308,6 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     width: "100%",
-    paddingBottom: 110
+    marginBottom: 130
   }
 });

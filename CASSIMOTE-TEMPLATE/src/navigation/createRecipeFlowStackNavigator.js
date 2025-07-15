@@ -11,7 +11,7 @@ export default function CreateRecipeFlowStackNavigator(){
     return(
         <Stack.Navigator initialRouteName="stepOne" >
             <Stack.Screen name="stepOne" component={StepOne} options={{headerShown:false}} />
-            <Stack.Screen name="stepTwo" component={StepTwo} />
+            <Stack.Screen name="stepTwo" component={StepTwo} options={{title:"Crear Receta"}}/>
             <Stack.Screen name="stepThree" component={StepThree} options={{headerShown:false}} />
             <Stack.Screen name="stepFour" component={StepFour} options={{headerShown:false}} />
         </Stack.Navigator>

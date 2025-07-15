@@ -53,6 +53,7 @@ const ArchivedScreen = ({navigation}) => {
           </Text>
         ) : (
           <FlatList
+          style={{marginBottom:100}}
             data={recipes}
             keyExtractor={(item) => item.recipeId}
             renderItem={({ item }) => (

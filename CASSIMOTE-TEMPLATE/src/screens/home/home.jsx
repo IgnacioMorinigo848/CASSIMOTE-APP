@@ -12,6 +12,7 @@ import CategoryCard from '../../components/CategoryCard';
 import BottomBar from '../../components/BottonBar';
 import useHomeData from '../../api/RECIPE-SERVICE/home/home';
 import { AuthContext } from '../../context/AuthContext';
+<<<<<<< HEAD
 import { useNavigation } from '@react-navigation/native';
 
 export default function Home({navigation}) {
@@ -20,20 +21,53 @@ export default function Home({navigation}) {
 
   const [searchText, setSearchText] = useState('');
 
+=======
+import searchByName from "../../api/RECIPE-SERVICE/search/searchByName"
+
+export default function Home({navigation}) {
+  const { token } = useContext(AuthContext);
+>>>>>>> 7b7f2497d58835f7cdb98f8931e6a4a937a1f8f7
   const { data, loading, error } = useHomeData(token);
-    const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loadingSearch,setLoadingSearch] = useState(false);
 
-  useEffect(() => {
-    if (!loading && data) console.log("🟢 HOME DATA:", data);
-    if (!loading && error) console.error("🔴 ERROR AL CARGAR HOME:", error);
-  }, [loading, data, error]);
-
-  if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+  if (loading || loadingSearch) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
 
   if (error) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error.message}</Text>;
 
+<<<<<<< HEAD
   const { lastThreeRecipes, diet, timeSpent, ability } = data;
   const categories = [diet, timeSpent, ability];
+=======
+  const { lastThreeRecipes, diet, timeSpent, ability,typeOfDish } = data;
+
+  const categories = [diet, timeSpent, ability,typeOfDish];
+
+  const getSearch = async (searchTerm) => {
+    if(searchTerm){
+  setLoadingSearch(true);
+  const result = await searchByName(token, searchTerm);
+  setLoadingSearch(false);
+
+  if (result?.success) {
+    navigation.navigate("filteredResults", {
+      recipesName: result.recipes,
+      errorName: null,
+      option: 1,
+      text:searchTerm
+    });
+  } else {
+    navigation.navigate("filteredResults", {
+      recipesName: null,
+      errorName: result?.message || 'Error desconocido',
+      option: 1,
+      text:searchTerm
+    });
+  }
+   setSearchTerm("")
+}
+};
+>>>>>>> 7b7f2497d58835f7cdb98f8931e6a4a937a1f8f7
 
   // rdenamiento por defecto título ascendente
   const handleSearch = () => {
@@ -62,7 +96,7 @@ export default function Home({navigation}) {
         <SearchBar 
         value={searchTerm}
         onChangeText={(text) => {setSearchTerm(text)}}
-        searchAction={()=>{ navigation.navigate("filteredResults",{option:1,text:searchTerm})}} 
+        searchAction={()=>{ getSearch(searchTerm)}} 
         filterAction={()=> {navigation.navigate("filteredResults")}}
         />
       {lastThreeRecipes?.success && (

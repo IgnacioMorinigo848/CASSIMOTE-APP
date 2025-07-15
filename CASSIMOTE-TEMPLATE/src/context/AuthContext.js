@@ -10,7 +10,9 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true); // inicia en true hasta verificar token
+  const [loading, setLoading] = useState(true); 
+  const [preferences, setPreferences] = useState(null);
+  const [nickName, setNickName] = useState();
 
   const login = async (email, password, rememberMe = false) => {
     const query = `
@@ -36,6 +38,7 @@ export const AuthProvider = ({ children }) => {
       );
 
       const data = response.data;
+      console.log(data)
 
       if (data.errors) {
         throw new Error(data.errors[0]?.message || 'Error en la respuesta del servidor');
@@ -108,6 +111,37 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }
 };
+<<<<<<< HEAD
+=======
+
+  const loadPreferences = async () =>{
+    try{
+      const storedPreferences = await AsyncStorage.getItem('preferences');
+      if (storedPreferences)
+        setPreferences(JSON.parse(storedPreferences));
+    }catch (err) {
+    console.error('Error cargando preferencias:', err);
+    } 
+  };
+>>>>>>> 7b7f2497d58835f7cdb98f8931e6a4a937a1f8f7
+
+  const loadNickName = async () =>{
+  try{
+    const storedNickName = await AsyncStorage.getItem('nickName');
+    if(storedNickName)
+      setNickName(storedNickName);
+  } catch (err) {
+    console.error('Error cargando nickName:', err);
+  }
+};
+
+  const deleteRegister = async () =>{
+    await AsyncStorage.removeItem('preferences');
+    await AsyncStorage.removeItem('nickName');
+    setPreferences(null);
+    setNickName(null);
+    
+  }
 
   useEffect(() => {
     checkLoginStatus();
@@ -122,7 +156,14 @@ export const AuthProvider = ({ children }) => {
       loading,
       login,
       logout,
-      setToken
+      setToken,
+      setPreferences,
+      preferences,
+      loadPreferences,
+      nickName,
+      setNickName,
+      loadNickName,
+      deleteRegister
     }}>
       {children}
     </AuthContext.Provider>

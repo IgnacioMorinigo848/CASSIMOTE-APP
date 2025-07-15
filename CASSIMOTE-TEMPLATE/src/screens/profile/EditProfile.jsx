@@ -12,8 +12,7 @@ import deleteImage from "../../api/IMAGE-SERVICE/deleteImage";
 import updateProfile from "../../api/USER-SERVICE/profile/updateProfile";
 import { useRoute } from "@react-navigation/native";
 import * as FileSystem from 'expo-file-system';
-
-const DEFAULT_IMAGE = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+import getInitials from "../../helper/getInitials";
 
 export default function EditProfile({ navigation }) {
   const [visible, setVisible] = useState(false);
@@ -21,7 +20,7 @@ export default function EditProfile({ navigation }) {
   const { token } = useContext(AuthContext);
   const route = useRoute();
 
-  const {image,nickName} = route.params;
+  const {image="",nickName} = route.params;
 
   useEffect(() => {
     setProfileImage({uri:image});
@@ -39,6 +38,7 @@ export default function EditProfile({ navigation }) {
       setProfileImage(imageWithTimestamp);
 
       const { url } = await uploadImage(base64Image);
+      setProfileImage({uri:url})
       console.log("url obtenida", url)
       const { oldUrl } = await updateProfile(token, url);
 
@@ -46,7 +46,7 @@ export default function EditProfile({ navigation }) {
         await deleteImage(oldUrl, token);
       }
     } catch (error) {
-      console.error('🔴 Error al actualizar imagen:', error.message);
+      console.error('Error al actualizar imagen:', error.message);
     }
   };
 
@@ -62,25 +62,28 @@ export default function EditProfile({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.topBarContainer}>
         <View style={styles.row}>
-          <BackButtonComponent navigation={navigation} />
+          <BackButtonComponent navigation={navigation} mode="reset" to="profileFlowStackNavigator" />
           <Text style={styles.title}>Editar Perfil</Text>
         </View>
       </View>
       <View style={styles.content}>
         <View style={styles.buttonProfileContent}>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
-             {image ? (
-                <Image style={styles.profileImage} source={{uri:image}} />
+            <View style={styles.imageContent}>
+             {profileImage?.uri && profileImage.uri !== "" ? (
+                <Image style={styles.profileImage} source={profileImage} />
               ) : (
                 <Text style={styles.initialsText}>{getInitials(nickName)}</Text>
               )}
+
+              </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
             <Text style={styles.buttonText}>Cambiar foto de perfil</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.recoverAccountContent}>
-          <ButtonComponent onPress={() => navigation.navigate("recoverAccountFlowStackNavigator")}>
+          <ButtonComponent onPress={() => navigation.replace("recoverAccountFlowStackNavigator")}>
             Cambiar contraseña
           </ButtonComponent>
         </View>
@@ -125,10 +128,19 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20
   },
-  profileImage: {
+  imageContent:{
     width: 150,
     height: 150,
-    borderRadius: 400
+    borderRadius: 400,
+    backgroundColor: '#D3D3D3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden'
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover'
   },
   buttonText: {
     fontSize: 16,
@@ -139,7 +151,8 @@ const styles = StyleSheet.create({
   },
    initialsText: {
     color: '#AF47D2',
-    fontSize: 18,
+    fontSize: 40,
     fontWeight: 'bold'
+
   }
 });

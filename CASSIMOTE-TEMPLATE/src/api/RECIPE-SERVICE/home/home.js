@@ -5,7 +5,6 @@ import Constants from 'expo-constants';
 const API_URL = Constants.expoConfig.extra.EXPO_API_URL_RECIPE;
 
 const useHomeData = (token) => {
-  console.log(token)
   const [data, setData] = useState(null);
   const [isSuccess, setIsSuccess] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,6 +50,15 @@ const useHomeData = (token) => {
           }
           message
         }
+        typeOfDish{
+        success
+          title
+          recipe {
+            _id
+            image
+          }
+          message
+        }
       }
       ... on errorHomeMessage {
         success
@@ -80,9 +88,8 @@ const useHomeData = (token) => {
         console.log(homeData)
         setIsSuccess(homeData);
         setData(homeData);
-        console.log(response.message)
+       
       } catch (err) {
-        console.log(err.message)
         setError("Ocurrió un error al cargar los datos.");
       } finally {
         setLoading(false);

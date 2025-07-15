@@ -40,13 +40,11 @@ const styles = StyleSheet.create({
   fontSize: 20,
   color: '#3f3fc3',
   textAlign: 'center',
-  position: 'absolute',
-  bottom: Platform.OS === 'android' ? 30 : 50, 
+  bottom: Platform.OS === 'android' ? 0 : 0, 
   left: 0,
   right: 0,
   alignItems: 'center',
   justifyContent: 'center',
-  marginBottom:40
 },
 });
 
