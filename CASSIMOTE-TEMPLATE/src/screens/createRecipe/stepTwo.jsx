@@ -203,9 +203,9 @@ export default function StepTwo() {
 
     const recipeToSent = prepareRecipeForSend(commonData, ingredients, portions);
     const netState = await NetInfo.fetch();
-
+    console.log("hay", netState.isConnected)
     if (!netState.isConnected) {
-      navigation.navigate('stepFour', { recipe: commonData, mode, draft });
+      navigation.navigate('stepFour', { recipe: commonData, mode});
       return;
     }
     console.log("🚀 Datos a enviar:", recipeToSent);

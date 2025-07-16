@@ -61,7 +61,7 @@ export default function ApproverScreen({ navigation }) {
       <ButtonComponent onPress={showRecipe}>Ver Recetas</ButtonComponent>
       <ButtonComponent onPress={showComment}>Ver Comentarios</ButtonComponent>
 
-      <ScrollView style={{ width: '100%'}}>
+      <ScrollView style={{ width: '100%',marginBottom:40}}>
         {btnRecipe && recipes.length > 0 && recipes.map((recipe) => (
           <ExpandableRecipeCard
             key={recipe._id}
@@ -70,8 +70,6 @@ export default function ApproverScreen({ navigation }) {
             showApprove={true}
             onAprove={() => handleApproveRecipe(recipe._id, true)}
             onDelete={() => handleApproveRecipe(recipe._id, false)}
-            navigation={navigation}
-            source={"profile"}
           />
         ))}
 

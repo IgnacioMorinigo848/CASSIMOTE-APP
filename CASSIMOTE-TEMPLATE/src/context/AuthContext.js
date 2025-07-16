@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); 
   const [preferences, setPreferences] = useState(null);
   const [nickName, setNickName] = useState();
+  const [draftList, setDraftList] = useState([]);
 
   const login = async (email, password, rememberMe = false) => {
     const query = `
@@ -138,10 +139,40 @@ export const AuthProvider = ({ children }) => {
     setPreferences(null);
     setNickName(null);
     
-  }
+  };
+
+  const loadDraft = async () =>{
+    try{ 
+      const storedList = await AsyncStorage.getItem("draftList");
+      if(storedList)
+        setDraftList(storedList)
+    }catch(error){
+      console.log("No se pudo cargar draftList", error.message);
+    }
+  };
+
+  const addTolist = async (recipe) => {
+    let response = existToList(recipe.name,recipe.nickName);
+    if (!response) {
+      const updatedList = [...draftList, recipe];
+      setDraftList(updatedList);
+      await AsyncStorage.setItem('draftList', JSON.stringify(updatedList));
+    }
+  };
+
+  const existToList = (name, nickName) => {
+  if (draftList.length === 0) return false;
+
+  return draftList.find(recipe => 
+    recipe.name?.toLowerCase().includes(name.toLowerCase()) &&
+    recipe.nickName?.toLowerCase().includes(nickName.toLowerCase())
+  );
+};
+
 
   useEffect(() => {
     checkLoginStatus();
+    loadDraft();
   }, []);
 
   return (
@@ -160,7 +191,9 @@ export const AuthProvider = ({ children }) => {
       nickName,
       setNickName,
       loadNickName,
-      deleteRegister
+      deleteRegister,
+      addTolist,
+      draftList
     }}>
       {children}
     </AuthContext.Provider>

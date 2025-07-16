@@ -10,10 +10,11 @@ import useProfileData from "../../api/RECIPE-SERVICE/profile/profile";
 import useGetProfileData from "../../api/RECIPE-SERVICE/profile/getProfileData";
 import existName from "../../api/RECIPE-SERVICE/createRecipe/existName";
 import deleteRecipe from "../../api/RECIPE-SERVICE/createRecipe/deleteRecipe";
+import ExpandableRecipeCard from "../approver/ExpandableRecipeCard";
 
 export default function Profile({ navigation }) {
   const [visible, setVisible] = useState(false);
-  const { token, logout } = useContext(AuthContext);
+  const { token, logout,draftList } = useContext(AuthContext);
   const { data, loading, error } = useProfileData(token);
   const { dataProfile, loadingProfile, errorProfile } = useGetProfileData(token);
   const [recipeData, setRecipeData] = useState([]);
@@ -35,8 +36,8 @@ export default function Profile({ navigation }) {
   const showDraft = () =>{
     if(!active){
       {console.log("estamos en borrador")}
-      setRecipeData(null)
       setActive(!active)
+      setRecipeData(draftList)
     }else{
       setActive(!active)
       if(data && !loading)
@@ -178,7 +179,7 @@ export default function Profile({ navigation }) {
         </TouchableOpacity>
         <ScrollView style={styles.scrollContainer}>
           <View style={styles.scrollContent}>
-          {recipeData && recipeData.map((recipe, index) => (
+          {!active && recipeData && recipeData.map((recipe, index) => (
             <ProfileRecipeCard
               key={recipe._id}
               recipe={recipe}
@@ -190,6 +191,18 @@ export default function Profile({ navigation }) {
               source={"profile"}
             />
           ))}
+           {active && recipeData && recipeData.map((recipe, index) => (
+           <ExpandableRecipeCard
+              key={recipe.name}
+              recipe={recipe}
+              showDelete={true}
+              showApprove={false}
+              showCreater={false}
+              showAdd={true}
+             
+            />
+          ))}
+
           </View>
         </ScrollView>
       </View>
