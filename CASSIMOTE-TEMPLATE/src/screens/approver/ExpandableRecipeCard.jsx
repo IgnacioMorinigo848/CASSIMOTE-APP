@@ -45,8 +45,11 @@ export default function ExpandableRecipeCard({
             {showCreater && <Text style={styles.text}>Creador: {recipe.nickName}</Text>}
             <Text style={styles.text}>Titulo: {recipe.name}</Text>
             <Text style={styles.text}>Description: {recipe.description}</Text>
+            <Text style={styles.text}>Porciones: {recipe.portions}</Text>
             <Text style={styles.text}>Tipo de Plato: {recipe.typeOfDish}</Text>
             <Text style={styles.text}>Tipo de Dieta: {recipe.typeOfDiet}</Text>
+            <Text style={styles.text}>Tiempo: {recipe.time}</Text>
+            <Text style={styles.text}>Dificultad: {recipe.difficulty}</Text>
             <View style={styles.toggleButtons}>
               <TouchableOpacity onPress={() => toggleSection("ingredientes")}>
                 <Text style={styles.toggleText}>Ingredientes</Text>

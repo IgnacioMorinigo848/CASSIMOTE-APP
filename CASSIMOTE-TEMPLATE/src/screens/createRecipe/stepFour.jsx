@@ -10,11 +10,34 @@ export default function StepFour({ navigation,route }) {
   const {addTolist} = useContext(AuthContext);
  
   const handleSave = async () => {
-    recipe.mode = mode;
-    await addTolist(recipe)
-    navigation.navigate("home")
-    
-  };
+  recipe.mode = mode;
+  const wasAdded = await addTolist(recipe);
+
+  if (!wasAdded) {
+    Alert.alert(
+      "La receta ya existe con ese nombre.",
+      "¿Qué deseas hacer?",
+      [
+        {
+          text: "Reemplazar",
+          onPress: async () => {
+            await addTolist(recipe, true); // reemplazar
+            navigation.replace("home");
+          },
+        },
+        {
+          text: "Ignorar",
+          style: "cancel",
+          onPress: () => {
+            navigation.replace("home");
+          },
+        },
+      ]
+    );
+  } else {
+    navigation.navigate("home");
+  }
+};
 
   const handleChangeNetwork = () => {
   if (Platform.OS === 'ios') {

@@ -14,7 +14,7 @@ import ExpandableRecipeCard from "../approver/ExpandableRecipeCard";
 
 export default function Profile({ navigation }) {
   const [visible, setVisible] = useState(false);
-  const { token, logout,draftList } = useContext(AuthContext);
+  const { token, logout,draftList,removeFromList } = useContext(AuthContext);
   const { data, loading, error } = useProfileData(token);
   const { dataProfile, loadingProfile, errorProfile } = useGetProfileData(token);
   const [recipeData, setRecipeData] = useState([]);
@@ -121,6 +121,12 @@ export default function Profile({ navigation }) {
     }
   };
 
+  const handleDeleteToDraft = async (name) => {
+  await removeFromList(name);
+  setRecipeData(prev => prev.filter(r => r.name.trim().toLowerCase() !== name.trim().toLowerCase()));
+};
+
+
   if (loading || loadingProfile || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
   if (error || errorProfile) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error?.message || errorProfile?.message}</Text>;
 
@@ -177,6 +183,7 @@ export default function Profile({ navigation }) {
         <TouchableOpacity style={styles.createRecipeButton} onPress={() => navigation.navigate("createRecipe")}>
           <Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text>
         </TouchableOpacity>
+       
         <ScrollView style={styles.scrollContainer}>
           <View style={styles.scrollContent}>
           {!active && recipeData && recipeData.map((recipe, index) => (
@@ -193,16 +200,18 @@ export default function Profile({ navigation }) {
           ))}
            {active && recipeData && recipeData.map((recipe, index) => (
            <ExpandableRecipeCard
-              key={recipe.name}
+              key={`${recipe.name.trim().toLowerCase()}`}
               recipe={recipe}
               showDelete={true}
               showApprove={false}
               showCreater={false}
               showAdd={true}
+              onDelete={()=>handleDeleteToDraft(recipe.name.trim())}
              
             />
           ))}
-
+          {recipeData.length === 0 && 
+          <View style={{flex:1,justifyContent:"center",marginTop:100}}><Text style={{alignItems:"center",fontWeight:900}}>La lista se encuentra vacia</Text></View>}
           </View>
         </ScrollView>
       </View>

@@ -81,8 +81,10 @@ export const AuthProvider = ({ children }) => {
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('user');
     await AsyncStorage.removeItem('rememberMe');
+    await AsyncStorage.removeItem('draftList');
     setToken(null);
     setUser(null);
+    setDraftList(null);
     
   };
 
@@ -144,29 +146,50 @@ export const AuthProvider = ({ children }) => {
   const loadDraft = async () =>{
     try{ 
       const storedList = await AsyncStorage.getItem("draftList");
-      if(storedList)
-        setDraftList(storedList)
+      if(storedList){
+        const parsedList = JSON.parse(storedList); 
+        setDraftList(Array.isArray(parsedList) ? parsedList : []);
+      }
     }catch(error){
       console.log("No se pudo cargar draftList", error.message);
     }
   };
 
-  const addTolist = async (recipe) => {
-    let response = existToList(recipe.name,recipe.nickName);
-    if (!response) {
-      const updatedList = [...draftList, recipe];
-      setDraftList(updatedList);
-      await AsyncStorage.setItem('draftList', JSON.stringify(updatedList));
-    }
-  };
+  const getRecipeKey = (name) => name.trim().toLowerCase();
 
-  const existToList = (name, nickName) => {
-  if (draftList.length === 0) return false;
+const addTolist = async (recipe, forceReplace = false) => {
+  const key = getRecipeKey(recipe.name);
 
-  return draftList.find(recipe => 
-    recipe.name?.toLowerCase().includes(name.toLowerCase()) &&
-    recipe.nickName?.toLowerCase().includes(nickName.toLowerCase())
+  const index = draftList.findIndex(
+    r => getRecipeKey(r.name) === key
   );
+
+  let updatedList = [...draftList];
+
+  if (index !== -1) {
+    if (forceReplace) {
+      updatedList[index] = recipe; 
+    } else {
+      return false; 
+    }
+  } else {
+    updatedList.push(recipe); 
+  }
+
+  setDraftList(updatedList);
+  await AsyncStorage.setItem('draftList', JSON.stringify(updatedList));
+  return true;
+};
+
+const removeFromList = async (recipeName) => {
+  const key = getRecipeKey(recipeName);
+
+  const updatedList = draftList.filter(
+    (r) => getRecipeKey(r.name) !== key
+  );
+
+  setDraftList(updatedList);
+  await AsyncStorage.setItem('draftList', JSON.stringify(updatedList));
 };
 
 
@@ -193,6 +216,7 @@ export const AuthProvider = ({ children }) => {
       loadNickName,
       deleteRegister,
       addTolist,
+      removeFromList,
       draftList
     }}>
       {children}
