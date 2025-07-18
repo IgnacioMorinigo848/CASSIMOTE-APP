@@ -107,7 +107,7 @@ export default function Profile({ navigation }) {
         navigation.navigate('createRecipe', {
           screen: 'stepTwo',
           params: {
-            mode: 'UPDATE',
+            mode: 'UPDATE-ALL',
             recipe: result.recipe,
             activate: true,
             id: result.recipe?._id
@@ -207,6 +207,7 @@ export default function Profile({ navigation }) {
               showCreater={false}
               showAdd={true}
               onDelete={()=>handleDeleteToDraft(recipe.name.trim())}
+              onAprove={()=>{console.log("mode",recipe.mode)}}
              
             />
           ))}

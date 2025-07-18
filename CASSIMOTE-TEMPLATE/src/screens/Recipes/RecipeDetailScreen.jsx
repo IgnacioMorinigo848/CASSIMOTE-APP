@@ -65,7 +65,12 @@ export default function RecipeDetailScreen({ navigation }) {
     try {
       let response;
       if (!isFavorite) {
-        const recipe = prepareRecipeForSend(recipeData, ingredients, portion);
+        const recipe = {
+        ...prepareRecipeForSend(recipeData, ingredients, portion, true),
+        recipeId: recipeData._id || id,
+        numberOfStart:recipeData.numberOfStart
+      };
+      console.log(recipe)
         response = await addRecipeToList(token, recipe);
       } else {
         response = await deleteToList(token, id);

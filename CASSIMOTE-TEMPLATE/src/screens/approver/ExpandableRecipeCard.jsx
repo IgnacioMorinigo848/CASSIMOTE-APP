@@ -82,7 +82,7 @@ export default function ExpandableRecipeCard({
                 </TouchableOpacity>
               )}
               {showAdd && (
-                <TouchableOpacity style={styles.button} onPress={onDelete}>
+                <TouchableOpacity style={styles.button} onPress={onAprove}>
                   <MaterialIcons name="add" size={20} color="black" />
                   <Text style={styles.deleteText}>Cargar</Text>
                 </TouchableOpacity>
