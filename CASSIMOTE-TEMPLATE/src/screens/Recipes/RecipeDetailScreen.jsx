@@ -19,7 +19,6 @@ import useExistInList from '../../api/RECIPE-SERVICE/archived/existRecipe';
 import prepareRecipeForSend from "../../helper/prepareRecipeForSend";
 import addRecipeToList from '../../api/RECIPE-SERVICE/archived/addToList';
 import deleteToList from "../../api/RECIPE-SERVICE/archived/deleteToList";
-import BackButtonComponent from "../../components/BackButtonComponent"
 import InfoRow from './InfoRows';
 
 export default function RecipeDetailScreen({ navigation }) {
@@ -129,7 +128,7 @@ export default function RecipeDetailScreen({ navigation }) {
               color="gold"
             />
           ))}
-          { source !== "profile" &&
+          { source !== "profile" && token !== null &&
           <TouchableOpacity onPress={() => handleList()}>
             <Ionicons
               name={isFavorite ? 'bookmark' : 'bookmark-outline'}
@@ -196,7 +195,7 @@ export default function RecipeDetailScreen({ navigation }) {
           </View>
         )}
 
-        {dataComment && (
+        {dataComment && token!==null && (
           (dataComment.success && !dataComment.userHasVoted) || (!dataComment.success) ? (
             <TouchableOpacity
               style={styles.ratingButton}

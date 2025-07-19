@@ -14,8 +14,10 @@ export default function Welcome({ navigation }) {
       <View style={styles.middle}>
         <Text style={styles.title}>Comparte tu sabor y descubre el mundo</Text>
       </View>
-
       <View style={styles.bottom}>
+        <TouchableOpacity style={styles.guestButton}  onPress={()=>  navigation.navigate('home')}>
+          <Text style={styles.guestText}>Invitado</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={()=>  navigation.navigate('onboarding')}>
           <Text style={styles.buttonText}>Empecemos</Text>
         </TouchableOpacity>
@@ -45,7 +47,7 @@ const styles = StyleSheet.create({
     paddingHorizontal:wp('4%'),
   },
   middle: {
-    marginTop: hp('60%'),
+    marginTop: hp('50%'),
     paddingHorizontal: wp('5%'),
     alignItems: 'center',
   },
@@ -56,12 +58,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   bottom: {
-    position: 'absolute',
+    marginTop:100,
     bottom: hp('5%'),
     width: wp('100%'),
     alignItems: 'center',
   },
   button: {
+    width:"80%",
     backgroundColor: '#AF47D2',
     borderRadius: 30,
     paddingVertical: hp('2%'),
@@ -81,4 +84,22 @@ const styles = StyleSheet.create({
   loginLink: {
     color: '#FFE600',
   },
+  guestContent:{
+    width:"100%",
+    alignItems:"center",
+    marginBottom:300
+  },
+  guestButton: {
+    width:"80%",
+    backgroundColor: '#e6e0e0f6',
+    borderRadius: 30,
+    paddingVertical: hp('2%'),
+    paddingHorizontal: wp('20%'),
+    marginBottom: hp('2%'),
+  },
+  guestText:{
+     fontSize: wp('6%'),
+    color: '#AF47D2',
+    textAlign: 'center',
+  }
 });

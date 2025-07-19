@@ -71,18 +71,28 @@ export default function Home({navigation}) {
           </ScrollView>
         </>
       )}
-      
+      {token !== null && (
+        <>
         <SectionTitle title="Categorías" />
-     <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}>
-  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: "space-between", width: "100%" }}>
-    {categories.map((item, index) => (
-      item?.success && <CategoryCard key={index} data={item} />
-    ))}
-  </View>
-</ScrollView>
-
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: "space-between", width: "100%" }}>
+      {categories.map((item, index) => (
+        item?.success && <CategoryCard key={index} data={item} />
+        ))}
       </View>
-
+    </ScrollView>
+    </>
+    )}
+     {!token && (
+      <>
+      <View style={styles.guestContainer}>
+        <View style={styles.guestContent}>
+        <Text style={styles.guestMessage}>Se debe Iniciar Sesion para acceder a todas las funciones</Text>
+      </View>
+      </View>
+      </>
+    )}
+      </View>
       <BottomBar />
     </SafeAreaView>
   );

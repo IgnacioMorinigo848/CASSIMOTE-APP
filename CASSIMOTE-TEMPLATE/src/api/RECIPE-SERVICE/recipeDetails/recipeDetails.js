@@ -48,8 +48,6 @@ const useRecipeDetails = (token,id) => {
 `;
 
   useEffect(() => {
-    if (!token) return;
-
     const fetchData = async () => {
       setLoading(true);
       const variables = {id};
@@ -58,10 +56,10 @@ const useRecipeDetails = (token,id) => {
           API_URL,
           { query,variables},
           {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}), // solo agrega el token si existe
+          },
           }
         );
 

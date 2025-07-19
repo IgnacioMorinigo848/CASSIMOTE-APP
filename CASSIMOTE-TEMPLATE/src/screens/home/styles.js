@@ -11,6 +11,7 @@ export default styles = StyleSheet.create({
   content: {
     flex:1,
     width: '90%',
+    marginTop:20
   },
   searchContainer: {
     flexDirection: 'row',
@@ -88,6 +89,22 @@ export default styles = StyleSheet.create({
     width: '100%',
     height: "100%", // en lugar de 100%
     borderRadius: 10,
+  },
+  guestContainer:{
+    width:"100%",
+    alignItems:"center",
+  },
+  guestContent:{
+    width:"90%",
+    height:"auto",
+    backgroundColor:"#D9D9D9",
+    marginTop:40,
+    marginBottom:280,
+    borderRadius:20
+  },
+  guestMessage:{
+    color:"#AF47D2",
+    textAlign:"center",
+    padding:50
   }
-
 });

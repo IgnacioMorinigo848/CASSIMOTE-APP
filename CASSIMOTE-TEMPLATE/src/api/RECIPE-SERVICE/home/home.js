@@ -5,6 +5,7 @@ import Constants from 'expo-constants';
 const API_URL = Constants.expoConfig.extra.EXPO_API_URL_RECIPE;
 
 const useHomeData = (token) => {
+  console.log(token)
   const [data, setData] = useState(null);
   const [isSuccess, setIsSuccess] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -69,35 +70,34 @@ const useHomeData = (token) => {
 `;
 
   useEffect(() => {
-    if (!token) return;
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        API_URL,
+        { query },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token !== null ? { Authorization: `Bearer ${token}` } : {}), // solo agrega el token si existe
+          },
+        }
+      );
+      const homeData = response.data.data.home;
+      console.log()
+      console.log(homeData)
+      console.log()
+      setIsSuccess(homeData);
+      setData(homeData);
+    } catch (err) {
+      setError("Ocurrió un error al cargar los datos.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.post(
-          API_URL,
-          { query },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const homeData = response.data.data.home;
-        console.log(homeData)
-        setIsSuccess(homeData);
-        setData(homeData);
-       
-      } catch (err) {
-        setError("Ocurrió un error al cargar los datos.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [token]);
+  fetchData();
+}, [token]);
   
   return { data, isSuccess, loading, error };
 };
