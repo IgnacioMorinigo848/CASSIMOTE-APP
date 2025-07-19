@@ -61,6 +61,9 @@ export default function StepTwo() {
       setTypeOfDish(recipe.typeOfDish || '');
     }else{
       setName(recipe.name || '');
+      setDiet('Omnivoro');
+      setTypeOfDish('Pastas');
+      setDifficulty('MEDIO');
     }
   }, [mode, recipe]);
 
@@ -203,9 +206,9 @@ export default function StepTwo() {
 
     const recipeToSent = prepareRecipeForSend(commonData, ingredients, portions);
     const netState = await NetInfo.fetch();
-
+    console.log("hay", netState.isConnected)
     if (!netState.isConnected) {
-      navigation.navigate('stepFour', { recipe: commonData, mode, draft });
+      navigation.navigate('stepFour', { recipe: commonData, mode});
       return;
     }
     console.log("🚀 Datos a enviar:", recipeToSent);
@@ -325,7 +328,7 @@ export default function StepTwo() {
           <SelectionComponent
             ref={dietRef}
             options={questions[2].options}
-            defaultValue={diet}
+            defaultValue={diet || "Omnivoro"}
             fieldKey="diet"
             fieldErrors={fieldErrors}
             setFieldErrors={setFieldErrors}
@@ -338,11 +341,14 @@ export default function StepTwo() {
           <SelectionComponent
             ref={typeRef}
             options={questions[1].options}
-            defaultValue={typeOfDish}
+            defaultValue={typeOfDish || "Pastas"}
             fieldKey="typeOfDish"
             fieldErrors={fieldErrors}
             setFieldErrors={setFieldErrors}
-            onChange={(value) => setTypeOfDish(value)}
+            onChange={(value) => {
+    console.log('Cambio de TIPO DE PLATO:', value);
+    setTypeOfDish(value);
+  }}
             customValue={customTypeOfDish}
             setCustomValue={setCustomTypeOfDish}
           />

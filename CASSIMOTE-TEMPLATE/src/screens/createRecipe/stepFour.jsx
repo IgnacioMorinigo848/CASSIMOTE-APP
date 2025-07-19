@@ -1,22 +1,43 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Linking, Platform } from 'react-native';
+import { AuthContext } from '../../context/AuthContext';
 
 export default function StepFour({ navigation,route }) {
 
   const {recipe,mode} = route.params
-
-
-
-  const saveChange = () =>{
-     navigation.navigate("home")
-  };
+  const {addTolist} = useContext(AuthContext);
  
-  const handleSave = () => {
-    Alert.alert("Cambios guardados localmente");
-    // Acá podrías guardar la receta en AsyncStorage o algún storage local
-  };
+  const handleSave = async () => {
+  recipe.mode = mode;
+  const wasAdded = await addTolist(recipe);
+
+  if (!wasAdded) {
+    Alert.alert(
+      "La receta ya existe con ese nombre.",
+      "¿Qué deseas hacer?",
+      [
+        {
+          text: "Reemplazar",
+          onPress: async () => {
+            await addTolist(recipe, true); // reemplazar
+            navigation.replace("home");
+          },
+        },
+        {
+          text: "Ignorar",
+          style: "cancel",
+          onPress: () => {
+            navigation.replace("home");
+          },
+        },
+      ]
+    );
+  } else {
+    navigation.navigate("home");
+  }
+};
 
   const handleChangeNetwork = () => {
   if (Platform.OS === 'ios') {
@@ -45,11 +66,11 @@ const saveChanges = () =>{
       </View>
 
       <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={styles.btn} onPress={handleSave}>
+        <TouchableOpacity style={styles.btn} onPress={()=>handleSave()}>
           <Text style={styles.btnText}>Guardar Cambios</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.btn} onPress={navigation.goBack()}>
+        <TouchableOpacity style={styles.btn} onPress={()=>navigation.goBack()}>
           <Text style={styles.btnText}>Volver</Text>
         </TouchableOpacity>
 

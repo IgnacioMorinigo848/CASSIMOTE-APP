@@ -21,29 +21,23 @@ const SelectionComponent = forwardRef(({
   customValue: externalCustomValue,
   setCustomValue: setExternalCustomValue,
 }, ref) => {
-  const normalizedDefault = String(defaultValue).trim().toLowerCase();
   const [customValue, setCustomValue] = useState(externalCustomValue || "");
   const [customOptions, setCustomOptions] = useState([]);
 
-  // Sincroniza con valor externo si viene desde el padre
-  useEffect(() => {
-    if (externalCustomValue !== undefined) {
-      setCustomValue(externalCustomValue);
-    }
-  }, [externalCustomValue]);
+  const normalizedDefault = String(defaultValue || "").trim().toLowerCase();
 
-  const normalizedOptions = useMemo(() => {
-    return options.map((opt) => ({
+  const normalizedOptions = useMemo(() =>
+    options.map((opt) => ({
       ...opt,
       normalizedValue: String(opt.value).toLowerCase(),
-    }));
-  }, [options]);
+    })),
+    [options]
+  );
 
-  const isDefaultInOptions = useMemo(() => {
-    return normalizedOptions.some(
-      (opt) => normalizedDefault === opt.normalizedValue
-    );
-  }, [normalizedDefault, normalizedOptions]);
+  const isDefaultInOptions = useMemo(() =>
+    normalizedOptions.some(opt => normalizedDefault === opt.normalizedValue),
+    [normalizedDefault, normalizedOptions]
+  );
 
   const effectiveOptions = useMemo(() => {
     let newOptions = [...options];
@@ -61,9 +55,7 @@ const SelectionComponent = forwardRef(({
 
     if (allowCustom) {
       const hasOtro = newOptions.some(
-        (opt) =>
-          opt.label.toLowerCase() === "otro" ||
-          opt.value.toLowerCase() === "otro"
+        (opt) => opt.label.toLowerCase() === "otro" || opt.value.toLowerCase() === "otro"
       );
       if (!hasOtro) {
         newOptions.push({ label: "Otro", value: "Otro" });
@@ -73,27 +65,29 @@ const SelectionComponent = forwardRef(({
     return newOptions;
   }, [options, customOptions, defaultValue, isDefaultInOptions, allowCustom]);
 
-  const [selectedValue, setSelectedValue] = useState(() => {
-    if (defaultValue) return defaultValue;
-    return "";
-  });
+  const [selectedValue, setSelectedValue] = useState(() =>
+    isDefaultInOptions ? defaultValue : effectiveOptions[0]?.value || ""
+  );
 
   const [showInput, setShowInput] = useState(
     selectedValue.toLowerCase() === "otro"
   );
 
-  // Si defaultValue no está en las opciones, lo agregamos
+  // 🧠 Si defaultValue cambia, sincronizar el valor seleccionado
   useEffect(() => {
-    const found = effectiveOptions.some(
-      (opt) => opt.value.toLowerCase() === selectedValue.toLowerCase()
-    );
-
-    if (!found && defaultValue) {
+    if (defaultValue && defaultValue !== selectedValue) {
       setSelectedValue(defaultValue);
     }
-  }, [effectiveOptions, defaultValue]);
+  }, [defaultValue]);
 
-  // Función para exponer validación externa al padre (useRef)
+  // 🧠 Sincronizar custom value con prop externa
+  useEffect(() => {
+    if (externalCustomValue !== undefined) {
+      setCustomValue(externalCustomValue);
+    }
+  }, [externalCustomValue]);
+
+  // 🧠 Validación externa con `ref`
   useImperativeHandle(ref, () => ({
     validate: () => {
       if (selectedValue.toLowerCase() === "otro" && !customValue.trim()) {
@@ -109,9 +103,9 @@ const SelectionComponent = forwardRef(({
 
   const handleAdd = () => {
     const trimmedValue = customValue.trim();
-    const lowerTrimmedValue = trimmedValue.toLowerCase();
+    const lowerTrimmed = trimmedValue.toLowerCase();
 
-    if (lowerTrimmedValue === "") {
+    if (trimmedValue === "") {
       setFieldErrors?.((prev) => ({
         ...prev,
         [fieldKey]: "El valor no puede estar vacío.",
@@ -120,7 +114,7 @@ const SelectionComponent = forwardRef(({
     }
 
     const alreadyExists = effectiveOptions.some(
-      (opt) => String(opt.value).toLowerCase() === lowerTrimmedValue
+      (opt) => String(opt.value).toLowerCase() === lowerTrimmed
     );
 
     if (alreadyExists) {
@@ -135,6 +129,7 @@ const SelectionComponent = forwardRef(({
     setCustomOptions((prev) => [...prev, newOption]);
     setSelectedValue(trimmedValue);
     setCustomValue("");
+    setExternalCustomValue?.("");
     setShowInput(false);
     setFieldErrors?.((prev) => ({ ...prev, [fieldKey]: "" }));
     onChange?.(trimmedValue);
@@ -146,6 +141,8 @@ const SelectionComponent = forwardRef(({
     setShowInput(isOtro);
     if (!isOtro) {
       setFieldErrors?.((prev) => ({ ...prev, [fieldKey]: "" }));
+      setCustomValue("");
+      setExternalCustomValue?.("");
       onChange?.(value);
     }
   };
@@ -198,7 +195,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     fontSize: 14,
     color: "#000",
-    padding: 50,
   },
   addBtn: {
     flexDirection: "row",

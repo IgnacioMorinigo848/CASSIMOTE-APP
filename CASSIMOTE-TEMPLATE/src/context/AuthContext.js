@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); 
   const [preferences, setPreferences] = useState(null);
   const [nickName, setNickName] = useState();
+  const [draftList, setDraftList] = useState([]);
 
   const login = async (email, password, rememberMe = false) => {
     const query = `
@@ -80,8 +81,10 @@ export const AuthProvider = ({ children }) => {
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('user');
     await AsyncStorage.removeItem('rememberMe');
+    await AsyncStorage.removeItem('draftList');
     setToken(null);
     setUser(null);
+    setDraftList(null);
     
   };
 
@@ -141,10 +144,61 @@ export const AuthProvider = ({ children }) => {
     setPreferences(null);
     setNickName(null);
     
+  };
+
+  const loadDraft = async () =>{
+    try{ 
+      const storedList = await AsyncStorage.getItem("draftList");
+      if(storedList){
+        const parsedList = JSON.parse(storedList); 
+        setDraftList(Array.isArray(parsedList) ? parsedList : []);
+      }
+    }catch(error){
+      console.log("No se pudo cargar draftList", error.message);
+    }
+  };
+
+  const getRecipeKey = (name) => name.trim().toLowerCase();
+
+const addTolist = async (recipe, forceReplace = false) => {
+  const key = getRecipeKey(recipe.name);
+
+  const index = draftList.findIndex(
+    r => getRecipeKey(r.name) === key
+  );
+
+  let updatedList = [...draftList];
+
+  if (index !== -1) {
+    if (forceReplace) {
+      updatedList[index] = recipe; 
+    } else {
+      return false; 
+    }
+  } else {
+    updatedList.push(recipe); 
   }
+
+  setDraftList(updatedList);
+  await AsyncStorage.setItem('draftList', JSON.stringify(updatedList));
+  return true;
+};
+
+const removeFromList = async (recipeName) => {
+  const key = getRecipeKey(recipeName);
+
+  const updatedList = draftList.filter(
+    (r) => getRecipeKey(r.name) !== key
+  );
+
+  setDraftList(updatedList);
+  await AsyncStorage.setItem('draftList', JSON.stringify(updatedList));
+};
+
 
   useEffect(() => {
     checkLoginStatus();
+    loadDraft();
   }, []);
 
   return (
@@ -163,7 +217,10 @@ export const AuthProvider = ({ children }) => {
       nickName,
       setNickName,
       loadNickName,
-      deleteRegister
+      deleteRegister,
+      addTolist,
+      removeFromList,
+      draftList
     }}>
       {children}
     </AuthContext.Provider>

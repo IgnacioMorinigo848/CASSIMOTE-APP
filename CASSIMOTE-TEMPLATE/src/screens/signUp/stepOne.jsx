@@ -1,4 +1,4 @@
-import { View, SafeAreaView, StyleSheet, Platform, StatusBar, TouchableOpacity, ScrollView } from "react-native";
+import { View, SafeAreaView, StyleSheet, Platform, StatusBar, TouchableOpacity, ScrollView,KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard} from "react-native";
 import InputComponent from '../../components/InputComponent';
 import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
@@ -60,6 +60,8 @@ export default function StepOne({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
       style={styles.content}
        contentContainerStyle={styles.contentContainer}
@@ -117,6 +119,8 @@ export default function StepOne({ navigation }) {
       </View>
       </ScrollView>
       <TemporaryAlert visible={showAlert} message={alertMessage} />
+       </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
