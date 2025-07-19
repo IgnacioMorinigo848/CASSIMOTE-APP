@@ -2,41 +2,48 @@ import React, { useContext, useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { navigate } from '../helper/navigationService';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { AuthContext } from '../context/AuthContext';
-import TemporyAlert from "../components/TemporyAlert"
+import TemporyAlert from "../components/TemporyAlert";
 
 export default function BottomBar() {
-  const {token} = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
+  const navigation = useNavigation(); 
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  
-  const hamdleEvent = (path) =>{
-    if(token !== null){
-      navigate(path)
-    }else{
-      setAlertMessage("Se debe iniciar sesion para realizar la operacion.");
+
+  const handleEvent = (routeName) => {
+    if (token !== null) {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: routeName }],
+        })
+      );
+    } else {
+      setAlertMessage("Se debe iniciar sesión para realizar la operación.");
       setShowAlert(true);
       setTimeout(() => {
         setShowAlert(false);
-        setAlertMessage(""); 
+        setAlertMessage("");
       }, 2000);
-        }
+    }
   };
+
   return (
     <SafeAreaView edges={['bottom']} style={styles.container}>
       <View style={styles.navBar}>
-        <TouchableOpacity style={styles.navItem} onPress={()=>hamdleEvent("archived")}>
+        <TouchableOpacity style={styles.navItem} onPress={() => handleEvent("archived")}>
           <MaterialIcons name="bookmark-border" size={24} color="gray" />
           <Text style={styles.label}>Archivado</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={()=>navigate("home")}>
+        <TouchableOpacity style={styles.navItem} onPress={() => handleEvent("home")}>
           <Ionicons name="home-outline" size={24} color="gray" />
           <Text style={styles.label}>Inicio</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={()=>hamdleEvent("profileFlowStackNavigator")}>
+        <TouchableOpacity style={styles.navItem} onPress={() => handleEvent("profileFlowStackNavigator")}>
           <Ionicons name="person-outline" size={24} color="gray" />
           <Text style={styles.label}>Perfil</Text>
         </TouchableOpacity>
