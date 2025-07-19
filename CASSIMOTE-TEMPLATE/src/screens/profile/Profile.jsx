@@ -11,6 +11,7 @@ import useGetProfileData from "../../api/RECIPE-SERVICE/profile/getProfileData";
 import existName from "../../api/RECIPE-SERVICE/createRecipe/existName";
 import deleteRecipe from "../../api/RECIPE-SERVICE/createRecipe/deleteRecipe";
 import ExpandableRecipeCard from "../approver/ExpandableRecipeCard";
+import existForDraft from "../../api/RECIPE-SERVICE/profile/existForDraft";
 
 export default function Profile({ navigation }) {
   const [visible, setVisible] = useState(false);
@@ -48,7 +49,7 @@ export default function Profile({ navigation }) {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt) => {
-        if (evt.nativeEvent.touches.length === 1) {
+        if (evt.nativeEvent.touches.length === 3) {
           twoFingerTouch.current = true;
           return true;
         }
@@ -124,6 +125,106 @@ export default function Profile({ navigation }) {
   const handleDeleteToDraft = async (name) => {
   await removeFromList(name);
   setRecipeData(prev => prev.filter(r => r.name.trim().toLowerCase() !== name.trim().toLowerCase()));
+};
+
+const handleSave = async (recipe) => {
+  const { name, mode } = recipe;
+  const response = await existForDraft(token, name.trim());
+
+  switch (mode) {
+    case "CREATE":
+        Alert.alert(
+          "Confirmar creacion",
+          response.success ? 
+          "Ya existe una receta con ese nombre, ¿Deseas Reemplazarla?":
+          "No existe una receta con ese nombre, ¿Deseas Crear una nueva?",
+          [
+            {
+            text: response.success ? "Reemplazar":"Crear",
+            onPress: async () => {
+              // luego agregar la nueva versión (esto depende de cómo guardás en draftList)
+              Alert.alert(response.success ? "reemplazada":"La receta fue creada correctamente.");
+            }
+            },{ 
+              text: "Cancelar", style: "cancel",
+              onPres: async () =>{
+                Alert.alert("se cancelo la creacion");
+              } 
+            }
+          ]
+        );
+      break;
+
+    case "UPDATE":
+      Alert.alert(
+        "Confirmar actualización",
+        response.success ? 
+        "Ya existe una receta con ese nombre. ¿Deseás actualizarla?"
+        :"No existe la receta a actualizar, ¿Desea crear una nueva?",
+        [
+          { text: response.success ? "Actualizar":"Crear",
+            onPress: async () =>{
+              Alert.alert(response.success ? "se actualizo la receta":"se creo la receta, no existia")
+            }
+          },
+          {
+            text: "Cancelar",
+            onPress: async () => {
+              Alert.alert("Se cancelo la actualizacion.");
+            }
+          }
+        ]
+      );
+      break;
+
+    case "REPLACE":
+      Alert.alert(
+        "Confirmar el reemplazo",
+        response.success
+          ? "La receta ya existe. ¿Deseás reemplazar la receta existente?"
+          : "La receta no existe. ¿Deseás crear una nueva?",
+        [
+        {
+          text: response.success ? "Reemplazar" : "Crear",
+          onPress: async () => {
+            Alert.alert(response.success ? "Reemplazada":"Receta creada correctamente.");
+          },
+        },{ 
+            text: "Cancelar", style: "cancel",
+            onPress: async () =>{
+              Alert.alert("Se cancelo el reemplazo")
+            }
+          },
+        ]
+      );
+      break;
+
+    case "UPDATE-ALL":
+      Alert.alert(
+        "Confirmar la Edicion",
+        response.success
+          ? "La receta ya existe. ¿Deseás editar la receta existente?"
+          : "La receta no existe. ¿Deseás crear una nueva?",
+        [
+        {
+          text: response.success ? "Editar" : "Crear",
+          onPress: async () => {
+            Alert.alert(response.success ? "Se edito correctamente la receta":"Se creo correctamente la receta.");
+          },
+        },
+         { 
+          text: "Cancelar", style: "cancel",
+          onPress: async () =>{
+            Alert.alert("Se cancelo la operacion de edicion.")
+          }
+        },
+        ]
+      );
+      break;
+
+    default:
+      Alert.alert("Modo inválido", "No se reconoce el modo de operación.");
+  }
 };
 
 
@@ -207,7 +308,7 @@ export default function Profile({ navigation }) {
               showCreater={false}
               showAdd={true}
               onDelete={()=>handleDeleteToDraft(recipe.name.trim())}
-              onAprove={()=>{console.log("mode",recipe.mode)}}
+              onAprove={()=>handleSave(recipe)}
              
             />
           ))}

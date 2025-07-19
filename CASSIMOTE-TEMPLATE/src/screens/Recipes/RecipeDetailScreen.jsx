@@ -70,7 +70,7 @@ export default function RecipeDetailScreen({ navigation }) {
         recipeId: recipeData._id || id,
         numberOfStart:recipeData.numberOfStart
       };
-      console.log(recipe)
+      console.log(recipeData.numberOfStart)
         response = await addRecipeToList(token, recipe);
       } else {
         response = await deleteToList(token, id);
