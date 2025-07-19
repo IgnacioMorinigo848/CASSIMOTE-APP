@@ -12,6 +12,8 @@ import existName from "../../api/RECIPE-SERVICE/createRecipe/existName";
 import deleteRecipe from "../../api/RECIPE-SERVICE/createRecipe/deleteRecipe";
 import ExpandableRecipeCard from "../approver/ExpandableRecipeCard";
 import existForDraft from "../../api/RECIPE-SERVICE/profile/existForDraft";
+import loadRecipe from "../../api/RECIPE-SERVICE/createRecipe/loadRecipe"
+import updateRecipe from "../../api/RECIPE-SERVICE/createRecipe/updateRecipe";
 
 export default function Profile({ navigation }) {
   const [visible, setVisible] = useState(false);
@@ -26,6 +28,7 @@ export default function Profile({ navigation }) {
       if(!active)
         setRecipeData(data);
     }
+
     if (!loading && data) console.log("Profile DATA:", data);
     if (error || errorProfile) console.error("🔴 ERROR AL CARGAR Profile:", error || errorProfile);
   }, [loading, data, error, dataProfile]);
@@ -41,8 +44,7 @@ export default function Profile({ navigation }) {
       setRecipeData(draftList)
     }else{
       setActive(!active)
-      if(data && !loading)
-        setRecipeData(data)
+      navigation.replace("profileFlowStackNavigator")
     }
   }
 
@@ -129,10 +131,11 @@ export default function Profile({ navigation }) {
 
 const handleSave = async (recipe) => {
   const { name, mode } = recipe;
-  const response = await existForDraft(token, name.trim());
+  let response;
 
   switch (mode) {
     case "CREATE":
+        response = await existForDraft(token, name.trim());
         Alert.alert(
           "Confirmar creacion",
           response.success ? 
@@ -142,12 +145,32 @@ const handleSave = async (recipe) => {
             {
             text: response.success ? "Reemplazar":"Crear",
             onPress: async () => {
-              // luego agregar la nueva versión (esto depende de cómo guardás en draftList)
-              Alert.alert(response.success ? "reemplazada":"La receta fue creada correctamente.");
+              let mode = recipe.mode;
+              delete recipe.mode
+              let result;
+              if(response.success){
+                result = await loadRecipe(recipe,"REPLACE",token);
+                if(result.success){
+                  handleDeleteToDraft(recipe.name);
+                  Alert.alert("reemplazada")
+                }else{ 
+                  recipe.mode = mode;
+                  Alert.alert("No se pudo reemplazar la receta")
+                }
+              }else{
+                result = await loadRecipe(recipe,"CREATE",token)
+                if(result.success){
+                  handleDeleteToDraft(recipe.name);
+                  Alert.alert("receta creada exitosamente")
+                }else{ 
+                  recipe.mode = mode;
+                  Alert.alert("No se pudo crear la receta")
+                }
+              }
             }
             },{ 
               text: "Cancelar", style: "cancel",
-              onPres: async () =>{
+              onPress: async () =>{
                 Alert.alert("se cancelo la creacion");
               } 
             }
@@ -156,6 +179,7 @@ const handleSave = async (recipe) => {
       break;
 
     case "UPDATE":
+      response = await existForDraft(token, name.trim());
       Alert.alert(
         "Confirmar actualización",
         response.success ? 
@@ -164,7 +188,28 @@ const handleSave = async (recipe) => {
         [
           { text: response.success ? "Actualizar":"Crear",
             onPress: async () =>{
-              Alert.alert(response.success ? "se actualizo la receta":"se creo la receta, no existia")
+              let mode = recipe.mode;
+              delete recipe.mode
+              let result;
+              if(response.success){
+                result = await loadRecipe(recipe,"UPDATE",token);
+                if(result.success){
+                  handleDeleteToDraft(recipe.name);
+                  Alert.alert("receta actualizada exitosamente")
+                }else{ 
+                  recipe.mode = mode;
+                  Alert.alert("No se pudo actualizar la receta")
+                }
+              }else{
+                result = await loadRecipe(recipe,"CREATE",token)
+                if(result.success){
+                  handleDeleteToDraft(recipe.name);
+                  Alert.alert("receta creada exitosamente")
+                }else{ 
+                  recipe.mode = mode;
+                  Alert.alert("No se pudo crear la receta")
+                }
+              }
             }
           },
           {
@@ -178,6 +223,7 @@ const handleSave = async (recipe) => {
       break;
 
     case "REPLACE":
+      response = await existForDraft(token, name.trim());
       Alert.alert(
         "Confirmar el reemplazo",
         response.success
@@ -187,7 +233,28 @@ const handleSave = async (recipe) => {
         {
           text: response.success ? "Reemplazar" : "Crear",
           onPress: async () => {
-            Alert.alert(response.success ? "Reemplazada":"Receta creada correctamente.");
+          let mode = recipe.mode;
+          delete recipe.mode
+          let result;
+          if(response.success){
+            result = await loadRecipe(recipe,"REPLACE",token);
+            if(result.success){
+              handleDeleteToDraft(recipe.name);
+              Alert.alert("receta editada exitosamente")
+            }else{ 
+              recipe.mode = mode;
+              Alert.alert("No se pudo editar la receta")
+            }
+          }else{
+            result = await loadRecipe(recipe,"CREATE",token)
+            if(result.success){
+              handleDeleteToDraft(recipe.name);
+              Alert.alert("receta creada exitosamente")
+            }else{ 
+              recipe.mode = mode;
+              Alert.alert("No se pudo crear la receta")
+            }
+          }
           },
         },{ 
             text: "Cancelar", style: "cancel",
@@ -200,6 +267,7 @@ const handleSave = async (recipe) => {
       break;
 
     case "UPDATE-ALL":
+      response = await existForDraft(token, name.trim(),recipe.id);
       Alert.alert(
         "Confirmar la Edicion",
         response.success
@@ -209,7 +277,35 @@ const handleSave = async (recipe) => {
         {
           text: response.success ? "Editar" : "Crear",
           onPress: async () => {
-            Alert.alert(response.success ? "Se edito correctamente la receta":"Se creo correctamente la receta.");
+            let mode = recipe.mode;
+            delete recipe.mode
+            let result;
+            if(response.success){
+              recipe._id = recipe.id;
+              delete recipe.id;
+              result = await updateRecipe(recipe,token);
+              console.log(result)
+              if(result.success){
+                recipe.mode = mode;
+                handleDeleteToDraft(recipe.name);
+                Alert.alert("receta actualizada exitosamente")
+              }else{ 
+                recipe.mode = mode;
+                Alert.alert("No se pudo actualizar la receta")
+              }
+            }else{
+              let _id = recipe.id;
+              delete recipe.id;
+              result = await loadRecipe(recipe,"CREATE",token)
+              if(result.success){
+                handleDeleteToDraft(recipe.name);
+                Alert.alert("receta creada exitosamente")
+              }else{ 
+                recipe.mode = mode;
+                recipe._id = _id;
+                Alert.alert("No se pudo crear la receta")
+              }
+            }
           },
         },
          { 

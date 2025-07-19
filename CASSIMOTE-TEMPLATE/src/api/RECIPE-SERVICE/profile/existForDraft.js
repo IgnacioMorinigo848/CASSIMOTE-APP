@@ -3,10 +3,10 @@ import Constants from 'expo-constants';
 
 const API_URL = Constants.expoConfig.extra.EXPO_API_URL_RECIPE;
 
-const existForDraft = async (token, name) => {
+const existForDraft = async (token, name,id="") => {
   const query = `
-    query existForDraft($name: String!) {
-      existForDraft(name: $name) {
+    query existForDraft($name: String!,$id:String) {
+      existForDraft(name: $name,id:$id) {
         success
         message
       }
@@ -16,7 +16,7 @@ const existForDraft = async (token, name) => {
   try {
     const response = await axios.post(
       API_URL,
-      { query, variables: { name } },
+      { query, variables: { name,id } },
       {
         headers: {
           'Content-Type': 'application/json',
