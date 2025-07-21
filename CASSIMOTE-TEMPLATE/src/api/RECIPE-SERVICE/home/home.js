@@ -69,7 +69,6 @@ const useHomeData = (token, refreshKey = null) => {
   `;
 
   useEffect(() => {
-    if (!token) return;
 
     const fetchData = async () => {
       setLoading(true);
