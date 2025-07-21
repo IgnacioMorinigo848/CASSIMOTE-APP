@@ -9,12 +9,32 @@ import BottomBar from '../../components/BottonBar';
 import useHomeData from '../../api/RECIPE-SERVICE/home/home';
 import { AuthContext } from '../../context/AuthContext';
 import searchByName from "../../api/RECIPE-SERVICE/search/searchByName"
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function Home({navigation}) {
   const { token } = useContext(AuthContext);
-  const { data, loading, error } = useHomeData(token);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { data, loading, error } = useHomeData(token,refreshKey);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingSearch,setLoadingSearch] = useState(false);
+  const { isConnected, retryConnection,isChecking } = useNetworkGuard();
+
+  useEffect(() => {
+  if (isConnected) {
+    setRefreshKey(prev => prev + 1);
+  }
+}, [isConnected]);
+
+  if (isChecking) {
+  console.log("chequeando")
+  return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+}
+
+
+if (!isConnected) {
+      return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+    }
 
   if (loading || loadingSearch) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
 
@@ -48,6 +68,7 @@ export default function Home({navigation}) {
    setSearchTerm("")
 }
 };
+
 
   return (
     <SafeAreaView style={styles.container}>

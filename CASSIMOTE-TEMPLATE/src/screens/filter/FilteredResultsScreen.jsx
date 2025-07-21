@@ -23,6 +23,8 @@ import searchWithOutIngredients from '../../api/RECIPE-SERVICE/search/searchWith
 
 import { AuthContext } from '../../context/AuthContext';
 import ProfileRecipeCard from '../../components/ProfileRecipeCard';
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 const FilteredResultScreen = ({ navigation }) => {
   const [selected, setSelected] = useState(null);
@@ -35,6 +37,7 @@ const FilteredResultScreen = ({ navigation }) => {
   const { token } = useContext(AuthContext);
   const route = useRoute();
   const { recipesName, errorName, option,text="" } = route.params ?? {};
+  const { isConnected, retryConnection } = useNetworkGuard();
 
   useEffect(() => {
     if (option === 1) {
@@ -139,6 +142,11 @@ const orderByDate = () =>{
   };
 
   if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+
+  if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+      }
+  
 
   return (
     <SafeAreaView style={styles.container}>

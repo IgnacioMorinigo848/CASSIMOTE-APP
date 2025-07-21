@@ -7,6 +7,8 @@ import ButtonBack from '../../components/BackButtonComponent';
 import { validateCode } from '../../hooks/USER-SERVICE/auth/validateCode';
 import { getCode } from "../../api/USER-SERVICE/recoverAccount/recoverAccount";
 import { AuthContext } from "../../context/AuthContext";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function StepTwo({ navigation, route }) {
   const { email } = route.params; 
@@ -17,8 +19,8 @@ export default function StepTwo({ navigation, route }) {
 
   const [counter, setCounter] = useState(60); 
   const [canSubmit, setCanSubmit] = useState(true);
-
- 
+  const { isConnected, retryConnection } = useNetworkGuard();
+  
   useEffect(() => {
     if (counter === 0) {
       setCanSubmit(false);
@@ -32,6 +34,12 @@ export default function StepTwo({ navigation, route }) {
     return () => clearInterval(timer);
   }, [counter]);
 
+  useEffect(() => {
+  if (!isConnected) {
+    setCanSubmit(false);
+  }
+}, [isConnected]);
+
   const handleResendCode = async () => {
     let result = await getCode(email);
     if(result?.success){
@@ -41,6 +49,10 @@ export default function StepTwo({ navigation, route }) {
       setCanSubmit(true);
     }
   };
+
+  if (!isConnected) {
+      return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+    }
 
   return (
     <SafeAreaView style={styles.container}>

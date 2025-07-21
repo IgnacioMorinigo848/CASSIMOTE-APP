@@ -8,10 +8,13 @@ import { CommonActions } from '@react-navigation/native';
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import AddInterest from "../../api/RECIPE-SERVICE/preferences/addPreferences";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function StepThree({ navigation }) {
   const { password, setPassword, error, loading, handleSubmit } = useStepThreeForm(navigation);
   const {preferences, nickName,deleteRegister} = useContext(AuthContext);
+  const { isConnected, retryConnection } = useNetworkGuard();
 
   const handleSubmitFinal = async () => {
   try {
@@ -56,6 +59,10 @@ export default function StepThree({ navigation }) {
     }
     return error?.general;
   };
+
+   if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+      }
 
   return (
     <SafeAreaView style={styles.container}>

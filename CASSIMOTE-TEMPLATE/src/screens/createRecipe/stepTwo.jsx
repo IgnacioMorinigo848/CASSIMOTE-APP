@@ -20,6 +20,7 @@ import SelectionComponent from './SelectionComponent';
 import questions from '../../utils/onboarding/questionScript';
 import prepareRecipeForSend from '../../helper/prepareRecipeForSend';
 import updateRecipe from '../../api/RECIPE-SERVICE/createRecipe/updateRecipe';
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function StepTwo() {
   const navigation = useNavigation();
@@ -46,6 +47,7 @@ export default function StepTwo() {
 
   const dietRef = useRef();
   const typeRef = useRef();
+  const [isConnected,setIsConnected] = useState(true);
 
   useEffect(() => {
     if (mode !== 'CREATE' && mode !== 'REPLACE' && recipe) {
@@ -211,22 +213,35 @@ export default function StepTwo() {
       navigation.navigate('stepFour', { recipe: commonData, mode});
       return;
     }
-    console.log("🚀 Datos a enviar:", recipeToSent);
+    console.log(" Datos a enviar:", recipeToSent);
      console.log("is activate",activate)
     try {
   if (activate) {
-    console.log("🛠 Enviando para UPDATE:", recipeToSent);
+    console.log("Enviando para UPDATE:", recipeToSent);
     await updateRecipe(recipeToSent, token);
   } else {
-    console.log("🛠 Enviando para CREATE:", recipeToSent);
+    console.log("Enviando para CREATE:", recipeToSent);
     await loadRecipe(recipeToSent, mode, token);
   }
   navigation.navigate('stepThree');
 } catch (error) {
-  console.error("🔥 Error en la petición:", error.message || error);
+  console.error("Error en la petición:", error.message || error);
 }
     navigation.navigate('stepThree');
   };
+
+  const retryConnection = async () =>{
+    const netState = await NetInfo.fetch();
+    if (!netState.isConnected) {
+      setIsConnected(!isConnected)
+    }else{
+      setIsConnected(!isConnected)
+    }
+  }
+
+  if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={()=>retryConnection()} />;
+  }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -242,7 +257,7 @@ export default function StepTwo() {
               </TouchableOpacity>
             </View>
           ) : (
-            <TouchableOpacity style={styles.addBtn} onPress={() => setShowImagePicker(!showImagePicker)}>
+            <TouchableOpacity style={styles.addBtn} onPress={async () => {retryConnection(); if(isConnected) setShowImagePicker(!showImagePicker)}}>
               <Text style={styles.addBtnText}>+</Text>
             </TouchableOpacity>
           )}

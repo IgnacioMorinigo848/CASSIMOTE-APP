@@ -8,6 +8,8 @@ import { useNicknameSuggestions } from "../../hooks/USER-SERVICE/signUp/nickname
 import releaseAccount from "../../hooks/USER-SERVICE/signUp/releaseAccount" 
 import { useEffect,useState } from "react";
 import TemporaryAlert from "../../components/TemporyAlert";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function StepOne({ navigation }) {
   const {
@@ -25,13 +27,13 @@ export default function StepOne({ navigation }) {
 
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const { isConnected, retryConnection } = useNetworkGuard();
 
   const {
     suggestions,
     loadingSuggestions,
     fetchSuggestions
   } = useNicknameSuggestions();
-
 
   const handleRealeaseAccount = async () => {
   const resultRealease = await releaseAccount(email); 
@@ -52,11 +54,15 @@ export default function StepOne({ navigation }) {
 
   useEffect(() => {
     if (exist && nickName.trim().length > 0) {
-      fetchSuggestions(nickName);
+        fetchSuggestions(nickName);
     }
     if(exist && nickName.trim().length === 0)
       setExist(!exist)
   }, [exist, nickName]);
+
+  if (!isConnected) {
+    return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>

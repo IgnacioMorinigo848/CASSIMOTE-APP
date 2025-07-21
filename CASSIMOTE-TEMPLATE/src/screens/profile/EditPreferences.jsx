@@ -1,4 +1,3 @@
-// src/screens/EditPreferences.js
 import React, { useState, useEffect, useContext } from "react";
 import {
   View,
@@ -17,6 +16,8 @@ import ButtonComponent from "../../components/ButtonComponent";
 import { AuthContext } from "../../context/AuthContext";
 import updateInterests from "../../api/RECIPE-SERVICE/preferences/updateInterests";
 import TemporaryAlert from "../../components/TemporyAlert";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function EditPreferences({ navigation }) {
   const { token } = useContext(AuthContext);
@@ -24,6 +25,7 @@ export default function EditPreferences({ navigation }) {
   const [answers, setAnswers] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const { isConnected, retryConnection } = useNetworkGuard();
 
  useEffect(() => {
   if (questions && questions.length > 0) {
@@ -73,6 +75,10 @@ export default function EditPreferences({ navigation }) {
 
   if (loading || !questions) {
     return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+  }
+
+  if (!isConnected) {
+    return <ConnectionScreen visible={true} onRetry={retryConnection} />;
   }
 
   return (

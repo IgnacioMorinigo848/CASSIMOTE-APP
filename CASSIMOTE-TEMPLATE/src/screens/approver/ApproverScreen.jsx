@@ -9,6 +9,8 @@ import ExpandableRecipeCard from "./ExpandableRecipeCard";
 import ExpandableVoteCard from "./ExpandableVoteCard";
 import approveComment from "../../api/RECIPE-SERVICE/comments/approveComment";
 import approveRecipe from "../../api/RECIPE-SERVICE/createRecipe/approveRecipe";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function ApproverScreen({ navigation }) {
   const { token } = useContext(AuthContext);
@@ -19,6 +21,7 @@ export default function ApproverScreen({ navigation }) {
 
   const { data: recipeData } = useShowRecipeNotApproved(token);
   const { data: voteData } = useShowVoteNotApproved(token);
+  const { isConnected, retryConnection } = useNetworkGuard();
 
   useEffect(() => {
     if (recipeData?.success) setRecipes(recipeData.recipes || []);
@@ -50,6 +53,10 @@ export default function ApproverScreen({ navigation }) {
       alert(result.message || "Error al aprobar la receta");
     }
   };
+
+  if (!isConnected) {
+    return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>

@@ -4,6 +4,8 @@ import {ButtonComponent,ButtonBack,InputComponent,RadioButton,validateSignIn} fr
 import {AuthContext} from "../../context/AuthContext"
 import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function SignIn({navigation}){
     const [email, setEmail] = useState("");
@@ -11,7 +13,8 @@ export default function SignIn({navigation}){
     const [error,setError] = useState({});
     const [selected, setSelected] = useState(false);
     const { login } = useContext(AuthContext);
-
+    const { isConnected, retryConnection } = useNetworkGuard();
+    
     const validate = () => {
         const newError = validateSignIn({ email, password });
     setError(newError);
@@ -50,6 +53,9 @@ export default function SignIn({navigation}){
     }
   }
 };
+if (!isConnected) {
+      return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+    }
 
     return (
         <SafeAreaView style={styles.container}>

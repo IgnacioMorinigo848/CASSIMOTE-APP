@@ -20,6 +20,8 @@ import prepareRecipeForSend from "../../helper/prepareRecipeForSend";
 import addRecipeToList from '../../api/RECIPE-SERVICE/archived/addToList';
 import deleteToList from "../../api/RECIPE-SERVICE/archived/deleteToList";
 import InfoRow from './InfoRows';
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function RecipeDetailScreen({ navigation }) {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -28,6 +30,8 @@ export default function RecipeDetailScreen({ navigation }) {
   const { id, source = "main" } = route.params ?? {};
 
   const { token } = useContext(AuthContext);
+
+  const { isConnected, retryConnection } = useNetworkGuard();
 
   const {
   data: recipeData,
@@ -109,6 +113,10 @@ export default function RecipeDetailScreen({ navigation }) {
       alert('Error al eliminar la valoración: ' + error.message);
     }
   };
+
+  if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+      }
 
   return (
     <SafeAreaView style={styles.safeArea}>

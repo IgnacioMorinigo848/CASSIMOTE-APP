@@ -4,6 +4,8 @@ import { useState, useContext } from 'react';
 import BackButtonComponent from "../../components/BackButtonComponent";
 import existName from "../../api/RECIPE-SERVICE/createRecipe/existName";
 import { AuthContext } from '../../context/AuthContext';
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function StepOne({ navigation }) {
   const [title, setTitle] = useState("");
@@ -14,7 +16,7 @@ export default function StepOne({ navigation }) {
   const [recipeData, setRecipeData] = useState(null); 
 
   const { token } = useContext(AuthContext);
-
+  const { isConnected, retryConnection } = useNetworkGuard();
   const handleOptionPress = (option) => {
     const baseRecipe = {
       name: recipeData?.name,
@@ -80,6 +82,10 @@ export default function StepOne({ navigation }) {
       setChecking(false);
     }
   };
+
+  if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+  }
 
   return (
     <View style={styles.container}>

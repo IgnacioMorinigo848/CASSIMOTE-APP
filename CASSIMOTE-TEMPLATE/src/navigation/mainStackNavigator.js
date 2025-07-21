@@ -15,6 +15,7 @@ import ArchivedScreen from '../screens/archived/archivedScreen.jsx';
 import { AuthContext } from "../context/AuthContext.js";
 import { ActivityIndicator, View } from "react-native";
 import ApproverScreen from "../screens/approver/ApproverScreen.jsx";
+import ConnectionScreen from "../screens/connetion/connectionScreen.jsx";
 
 export default function mainStackNavigator() {
     const {token,loading} = useContext(AuthContext);
@@ -47,6 +48,7 @@ export default function mainStackNavigator() {
             <Stack.Screen name="createRecipe" component={CreateRecipeFlowStackNavigator} options={{headerShown:false}}/>
             <Stack.Screen name="archived" component={ArchivedScreen} options={{headerShown:false}}/>
             <Stack.Screen name="approver" component={ApproverScreen} options={{headerShown:false}}/>
+            <Stack.Screen name="connection" component={ConnectionScreen} options={{headerShown:false}}/>
         </Stack.Navigator>
     );
 };

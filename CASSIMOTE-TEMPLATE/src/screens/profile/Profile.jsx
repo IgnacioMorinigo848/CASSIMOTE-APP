@@ -14,6 +14,8 @@ import ExpandableRecipeCard from "../approver/ExpandableRecipeCard";
 import existForDraft from "../../api/RECIPE-SERVICE/profile/existForDraft";
 import loadRecipe from "../../api/RECIPE-SERVICE/createRecipe/loadRecipe"
 import updateRecipe from "../../api/RECIPE-SERVICE/createRecipe/updateRecipe";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function Profile({ navigation }) {
   const [visible, setVisible] = useState(false);
@@ -22,6 +24,7 @@ export default function Profile({ navigation }) {
   const { dataProfile, loadingProfile, errorProfile } = useGetProfileData(token);
   const [recipeData, setRecipeData] = useState([]);
   const [active, setActive] = useState(false);
+  const { isConnected, retryConnection } = useNetworkGuard();
 
   useEffect(() => {
     if (!loading && data) {
@@ -326,6 +329,10 @@ const handleSave = async (recipe) => {
 
   if (loading || loadingProfile || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
   if (error || errorProfile) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error?.message || errorProfile?.message}</Text>;
+
+  if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+      }
 
   return (
     <SafeAreaView

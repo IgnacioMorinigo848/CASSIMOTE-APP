@@ -13,13 +13,15 @@ import updateProfile from "../../api/USER-SERVICE/profile/updateProfile";
 import { useRoute } from "@react-navigation/native";
 import * as FileSystem from 'expo-file-system';
 import getInitials from "../../helper/getInitials";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function EditProfile({ navigation }) {
   const [visible, setVisible] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
   const { token } = useContext(AuthContext);
   const route = useRoute();
-
+  const { isConnected, retryConnection } = useNetworkGuard();
   const {image="",nickName} = route.params;
 
   useEffect(() => {
@@ -56,6 +58,10 @@ export default function EditProfile({ navigation }) {
         <Text style={{ textAlign: 'center', marginTop: 20 }}>Cargando imagen de perfil...</Text>
       </SafeAreaView>
     );
+  }
+
+  if (!isConnected) {
+    return <ConnectionScreen visible={true} onRetry={retryConnection} />;
   }
 
   return (

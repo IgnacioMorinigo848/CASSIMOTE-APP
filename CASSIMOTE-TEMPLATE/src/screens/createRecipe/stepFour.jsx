@@ -21,7 +21,7 @@ export default function StepFour({ navigation,route }) {
         {
           text: "Reemplazar",
           onPress: async () => {
-            await addTolist(recipe, true); // reemplazar
+            await addTolist(recipe, true);
             navigation.replace("home");
           },
         },
@@ -35,21 +35,10 @@ export default function StepFour({ navigation,route }) {
       ]
     );
   } else {
-    navigation.navigate("home");
+    navigation.replace("home");
   }
 };
 
-  const handleChangeNetwork = () => {
-  if (Platform.OS === 'ios') {
-    Linking.openURL('App-Prefs:WIFI');
-  } else {
-    Linking.openSettings();
-  }
-};
-
-const saveChanges = () =>{
-
-}
 
   return (
     <View style={styles.container}>
@@ -66,7 +55,7 @@ const saveChanges = () =>{
       </View>
 
       <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={styles.btn} onPress={()=>handleSave()}>
+        <TouchableOpacity style={styles.btn} onPress={async ()=> await handleSave()}>
           <Text style={styles.btnText}>Guardar Cambios</Text>
         </TouchableOpacity>
 
