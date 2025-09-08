@@ -4,24 +4,7 @@ import Constants from 'expo-constants';
 const API_URL = Constants.expoConfig.extra.EXPO_API_URL_RECIPE;
 
 const loadRecipe = async (recipeData, option = "CREATE", token) => {
-  const recipeInput = {
-    name: recipeData?.name?.trim(),
-    nickName: recipeData?.nickName?.trim(),
-    image: recipeData.image,
-    description: recipeData?.description?.trim(),
-    portions: recipeData.portions,
-    ingredients: recipeData.ingredients?.map(item => ({
-      name: item.name.trim(),
-      quantity: item.quantity,
-      unit: item.unit.trim()
-    })) || [],
-    steps: recipeData.steps?.map(step => ({ description: (step.description || step).trim() })) || [],
-    difficulty: recipeData.difficulty?.trim(),
-    time: recipeData.time,
-    typeOfDiet: recipeData.typeOfDiet?.trim(),
-    typeOfDish: recipeData.typeOfDish?.trim()
-  };
-
+  console.log("recibido", recipeData)
   const query = `
     mutation LoadRecipe($recipe: recipeInput!, $option: String!) {
       loadRecipe(recipe: $recipe, option: $option) {
@@ -32,7 +15,7 @@ const loadRecipe = async (recipeData, option = "CREATE", token) => {
   `;
 
   const variables = {
-    recipe: recipeInput,
+    recipe: recipeData,
     option: option
   };
 

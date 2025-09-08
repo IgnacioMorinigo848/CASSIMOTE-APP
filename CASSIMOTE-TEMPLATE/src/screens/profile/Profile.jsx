@@ -10,29 +10,51 @@ import useProfileData from "../../api/RECIPE-SERVICE/profile/profile";
 import useGetProfileData from "../../api/RECIPE-SERVICE/profile/getProfileData";
 import existName from "../../api/RECIPE-SERVICE/createRecipe/existName";
 import deleteRecipe from "../../api/RECIPE-SERVICE/createRecipe/deleteRecipe";
+import ExpandableRecipeCard from "../approver/ExpandableRecipeCard";
+import existForDraft from "../../api/RECIPE-SERVICE/profile/existForDraft";
+import loadRecipe from "../../api/RECIPE-SERVICE/createRecipe/loadRecipe"
+import updateRecipe from "../../api/RECIPE-SERVICE/createRecipe/updateRecipe";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function Profile({ navigation }) {
   const [visible, setVisible] = useState(false);
-  const { token, logout } = useContext(AuthContext);
+  const { token, logout,draftList,removeFromList } = useContext(AuthContext);
   const { data, loading, error } = useProfileData(token);
   const { dataProfile, loadingProfile, errorProfile } = useGetProfileData(token);
   const [recipeData, setRecipeData] = useState([]);
+  const [active, setActive] = useState(false);
+  const { isConnected, retryConnection } = useNetworkGuard();
 
   useEffect(() => {
     if (!loading && data) {
-      setRecipeData(data);
+      if(!active)
+        setRecipeData(data);
     }
-    if (!loading && data) console.log("🟢 HOME DATA:", data);
-    if (error || errorProfile) console.error("🔴 ERROR AL CARGAR HOME:", error || errorProfile);
+
+    if (!loading && data) console.log("Profile DATA:", data);
+    if (error || errorProfile) console.error("🔴 ERROR AL CARGAR Profile:", error || errorProfile);
   }, [loading, data, error, dataProfile]);
 
 
   const twoFingerTouch = useRef(false);
 
+
+  const showDraft = () =>{
+    if(!active){
+      {console.log("estamos en borrador")}
+      setActive(!active)
+      setRecipeData(draftList)
+    }else{
+      setActive(!active)
+      navigation.replace("profileFlowStackNavigator")
+    }
+  }
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt) => {
-        if (evt.nativeEvent.touches.length === 4) {
+        if (evt.nativeEvent.touches.length === 3) {
           twoFingerTouch.current = true;
           return true;
         }
@@ -91,7 +113,7 @@ export default function Profile({ navigation }) {
         navigation.navigate('createRecipe', {
           screen: 'stepTwo',
           params: {
-            mode: 'UPDATE',
+            mode: 'UPDATE-ALL',
             recipe: result.recipe,
             activate: true,
             id: result.recipe?._id
@@ -105,20 +127,224 @@ export default function Profile({ navigation }) {
     }
   };
 
+  const handleDeleteToDraft = async (name) => {
+  await removeFromList(name);
+  setRecipeData(prev => prev.filter(r => r.name.trim().toLowerCase() !== name.trim().toLowerCase()));
+};
+
+const handleSave = async (recipe) => {
+  const { name, mode } = recipe;
+  let response;
+
+  switch (mode) {
+    case "CREATE":
+        response = await existForDraft(token, name.trim());
+        Alert.alert(
+          "Confirmar creacion",
+          response.success ? 
+          "Ya existe una receta con ese nombre, ¿Deseas Reemplazarla?":
+          "No existe una receta con ese nombre, ¿Deseas Crear una nueva?",
+          [
+            {
+            text: response.success ? "Reemplazar":"Crear",
+            onPress: async () => {
+              let mode = recipe.mode;
+              delete recipe.mode
+              let result;
+              if(response.success){
+                result = await loadRecipe(recipe,"REPLACE",token);
+                if(result.success){
+                  handleDeleteToDraft(recipe.name);
+                  Alert.alert("reemplazada")
+                }else{ 
+                  recipe.mode = mode;
+                  Alert.alert("No se pudo reemplazar la receta")
+                }
+              }else{
+                result = await loadRecipe(recipe,"CREATE",token)
+                if(result.success){
+                  handleDeleteToDraft(recipe.name);
+                  Alert.alert("receta creada exitosamente")
+                }else{ 
+                  recipe.mode = mode;
+                  Alert.alert("No se pudo crear la receta")
+                }
+              }
+            }
+            },{ 
+              text: "Cancelar", style: "cancel",
+              onPress: async () =>{
+                Alert.alert("se cancelo la creacion");
+              } 
+            }
+          ]
+        );
+      break;
+
+    case "UPDATE":
+      response = await existForDraft(token, name.trim());
+      Alert.alert(
+        "Confirmar actualización",
+        response.success ? 
+        "Ya existe una receta con ese nombre. ¿Deseás actualizarla?"
+        :"No existe la receta a actualizar, ¿Desea crear una nueva?",
+        [
+          { text: response.success ? "Actualizar":"Crear",
+            onPress: async () =>{
+              let mode = recipe.mode;
+              delete recipe.mode
+              let result;
+              if(response.success){
+                result = await loadRecipe(recipe,"UPDATE",token);
+                if(result.success){
+                  handleDeleteToDraft(recipe.name);
+                  Alert.alert("receta actualizada exitosamente")
+                }else{ 
+                  recipe.mode = mode;
+                  Alert.alert("No se pudo actualizar la receta")
+                }
+              }else{
+                result = await loadRecipe(recipe,"CREATE",token)
+                if(result.success){
+                  handleDeleteToDraft(recipe.name);
+                  Alert.alert("receta creada exitosamente")
+                }else{ 
+                  recipe.mode = mode;
+                  Alert.alert("No se pudo crear la receta")
+                }
+              }
+            }
+          },
+          {
+            text: "Cancelar",
+            onPress: async () => {
+              Alert.alert("Se cancelo la actualizacion.");
+            }
+          }
+        ]
+      );
+      break;
+
+    case "REPLACE":
+      response = await existForDraft(token, name.trim());
+      Alert.alert(
+        "Confirmar el reemplazo",
+        response.success
+          ? "La receta ya existe. ¿Deseás reemplazar la receta existente?"
+          : "La receta no existe. ¿Deseás crear una nueva?",
+        [
+        {
+          text: response.success ? "Reemplazar" : "Crear",
+          onPress: async () => {
+          let mode = recipe.mode;
+          delete recipe.mode
+          let result;
+          if(response.success){
+            result = await loadRecipe(recipe,"REPLACE",token);
+            if(result.success){
+              handleDeleteToDraft(recipe.name);
+              Alert.alert("receta editada exitosamente")
+            }else{ 
+              recipe.mode = mode;
+              Alert.alert("No se pudo editar la receta")
+            }
+          }else{
+            result = await loadRecipe(recipe,"CREATE",token)
+            if(result.success){
+              handleDeleteToDraft(recipe.name);
+              Alert.alert("receta creada exitosamente")
+            }else{ 
+              recipe.mode = mode;
+              Alert.alert("No se pudo crear la receta")
+            }
+          }
+          },
+        },{ 
+            text: "Cancelar", style: "cancel",
+            onPress: async () =>{
+              Alert.alert("Se cancelo el reemplazo")
+            }
+          },
+        ]
+      );
+      break;
+
+    case "UPDATE-ALL":
+      response = await existForDraft(token, name.trim(),recipe.id);
+      Alert.alert(
+        "Confirmar la Edicion",
+        response.success
+          ? "La receta ya existe. ¿Deseás editar la receta existente?"
+          : "La receta no existe. ¿Deseás crear una nueva?",
+        [
+        {
+          text: response.success ? "Editar" : "Crear",
+          onPress: async () => {
+            let mode = recipe.mode;
+            delete recipe.mode
+            let result;
+            if(response.success){
+              recipe._id = recipe.id;
+              delete recipe.id;
+              result = await updateRecipe(recipe,token);
+              console.log(result)
+              if(result.success){
+                recipe.mode = mode;
+                handleDeleteToDraft(recipe.name);
+                Alert.alert("receta actualizada exitosamente")
+              }else{ 
+                recipe.mode = mode;
+                Alert.alert("No se pudo actualizar la receta")
+              }
+            }else{
+              let _id = recipe.id;
+              delete recipe.id;
+              result = await loadRecipe(recipe,"CREATE",token)
+              if(result.success){
+                handleDeleteToDraft(recipe.name);
+                Alert.alert("receta creada exitosamente")
+              }else{ 
+                recipe.mode = mode;
+                recipe._id = _id;
+                Alert.alert("No se pudo crear la receta")
+              }
+            }
+          },
+        },
+         { 
+          text: "Cancelar", style: "cancel",
+          onPress: async () =>{
+            Alert.alert("Se cancelo la operacion de edicion.")
+          }
+        },
+        ]
+      );
+      break;
+
+    default:
+      Alert.alert("Modo inválido", "No se reconoce el modo de operación.");
+  }
+};
+
+
   if (loading || loadingProfile || !dataProfile) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
   if (error || errorProfile) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error?.message || errorProfile?.message}</Text>;
+
+  if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+      }
 
   return (
     <SafeAreaView
       style={styles.container}
-      {...panResponder.current.panHandlers}  // Aquí aplicamos los handlers del gesto
+      {...panResponder.current.panHandlers}  
     >
-      <View style={styles.topBarContainer}>
+       <View style={styles.topBarContainer}>
         <View style={styles.profileBarContent}>
           <Text style={styles.profile}>Perfil</Text>
         </View>
         <View style={styles.buttonContent}>
-          <TouchableOpacity onPress={() => navigation.navigate("editProfile", { image: dataProfile.profileImage, nickName: dataProfile.nickName })}>
+          <TouchableOpacity onPress={() => navigation.navigate("editProfile", {image: dataProfile.profileImage,nickName:dataProfile.nickName })}>
             <FontAwesome5 name="pen-nib" size={20} color="black" style={styles.icon} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { setVisible(!visible) }}>
@@ -148,16 +374,23 @@ export default function Profile({ navigation }) {
           <Text>Mis Preferencias</Text>
         </TouchableOpacity>
       </View>
+      <View style={styles.preferencesContainer}>
+        <TouchableOpacity style={styles.preferencesButton} onPress={() => showDraft()}>
+          <Text>Borrador</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.recipeContainer}>
         <View style={styles.recipeTextContainer}>
-          <Text style={styles.recipeText}>Mis Recetas</Text>
+          <Text style={styles.recipeText}>{active ? "Borrador":"Mis Recetas"}</Text>
         </View>
         <TouchableOpacity style={styles.createRecipeButton} onPress={() => navigation.navigate("createRecipe")}>
           <Text style={styles.buttonTextCreateRecipe}>Crear Mi Receta</Text>
         </TouchableOpacity>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {recipeData.map((recipe) => (
+       
+        <ScrollView style={styles.scrollContainer}>
+          <View style={styles.scrollContent}>
+          {!active && recipeData && recipeData.map((recipe, index) => (
             <ProfileRecipeCard
               key={recipe._id}
               recipe={recipe}
@@ -169,6 +402,22 @@ export default function Profile({ navigation }) {
               source={"profile"}
             />
           ))}
+           {active && recipeData && recipeData.map((recipe, index) => (
+           <ExpandableRecipeCard
+              key={`${recipe.name.trim().toLowerCase()}`}
+              recipe={recipe}
+              showDelete={true}
+              showApprove={false}
+              showCreater={false}
+              showAdd={true}
+              onDelete={()=>handleDeleteToDraft(recipe.name.trim())}
+              onAprove={()=>handleSave(recipe)}
+             
+            />
+          ))}
+          {recipeData.length === 0 && 
+          <View style={{flex:1,justifyContent:"center",marginTop:100}}><Text style={{alignItems:"center",fontWeight:900}}>La lista se encuentra vacia</Text></View>}
+          </View>
         </ScrollView>
       </View>
 
@@ -284,9 +533,14 @@ const styles = StyleSheet.create({
   },
   buttonTextCreateRecipe: {
     fontWeight: "300",
-    fontSize: 18,
+    fontSize: 15
   },
   scrollContainer: {
-    alignItems: "center",
+    width: "100%",
+    marginBottom: 130
+  },
+  scrollContent:{
+    width:"100%",
+    alignItems:"center"
   }
 });

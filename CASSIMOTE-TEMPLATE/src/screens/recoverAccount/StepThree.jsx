@@ -4,6 +4,8 @@ import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import ButtonBack from '../../components/BackButtonComponent';
 import { useStepThreeForm } from "../../hooks/USER-SERVICE/recoverAccount/useStepThreeForm";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function StepThree({navigation}) {
  
@@ -17,6 +19,12 @@ export default function StepThree({navigation}) {
     handleSubmit,
     getPasswordError,
   } = useStepThreeForm(navigation);
+
+  const { isConnected, retryConnection } = useNetworkGuard();
+  
+  if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>

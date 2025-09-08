@@ -10,16 +10,18 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true); // inicia en true hasta verificar token
+  const [loading, setLoading] = useState(true); 
+  const [preferences, setPreferences] = useState(null);
+  const [nickName, setNickName] = useState();
+  const [draftList, setDraftList] = useState([]);
 
-  const login = async (nickName, email, password) => {
+  const login = async (email, password, rememberMe = false) => {
     const query = `
-      mutation signIn($nickName: String!, $email: String!, $password: String!) {
-        signIn(nickName: $nickName, email: $email, password: $password) {
+      mutation signIn($email: String!, $password: String!) {
+        signIn(email: $email, password: $password) {
           success
           token
           errors {
-            nickName
             email
             password
           }
@@ -27,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       }
     `;
 
-    const variables = { nickName, email, password };
+    const variables = { email, password };
 
     try {
       const response = await axios.post(
@@ -37,6 +39,7 @@ export const AuthProvider = ({ children }) => {
       );
 
       const data = response.data;
+      console.log(data)
 
       if (data.errors) {
         throw new Error(data.errors[0]?.message || 'Error en la respuesta del servidor');
@@ -45,12 +48,14 @@ export const AuthProvider = ({ children }) => {
       const resp = data.data.signIn;
 
       if (resp.success) {
-        const userData = { nickName, email };
+        const userData = { email };
         setToken(resp.token);
         setUser(userData);
 
-        await AsyncStorage.setItem('token', resp.token);
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
+        if (rememberMe) {
+          await AsyncStorage.setItem('token', resp.token);
+          await AsyncStorage.setItem('user', JSON.stringify(userData));
+        }
 
         return {
           success: true,
@@ -75,12 +80,18 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('user');
+    await AsyncStorage.removeItem('rememberMe');
+    await AsyncStorage.removeItem('draftList');
     setToken(null);
     setUser(null);
+    setDraftList(null);
+    
   };
 
   const checkLoginStatus = async () => {
-    try {
+  try {
+    const rememberMe = await AsyncStorage.getItem('rememberMe');
+    if (rememberMe === 'true') {
       const storedToken = await AsyncStorage.getItem('token');
       const storedUser = await AsyncStorage.getItem('user');
 
@@ -91,15 +102,100 @@ export const AuthProvider = ({ children }) => {
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
-    } catch (err) {
-      console.error('Error cargando estado de sesión:', err);
-    } finally {
-      setLoading(false);
+    } else {
+      // Si no quiso ser recordado, borramos todo
+      await AsyncStorage.multiRemove(['token', 'user']);
+      setToken(null);
+      setUser(null);
+    }
+  } catch (err) {
+    console.error('Error cargando estado de sesión:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const loadPreferences = async () =>{
+    try{
+      const storedPreferences = await AsyncStorage.getItem('preferences');
+      if (storedPreferences)
+        setPreferences(JSON.parse(storedPreferences));
+    }catch (err) {
+    console.error('Error cargando preferencias:', err);
+    } 
+  };
+
+  const loadNickName = async () =>{
+  try{
+    const storedNickName = await AsyncStorage.getItem('nickName');
+    if(storedNickName)
+      setNickName(storedNickName);
+  } catch (err) {
+    console.error('Error cargando nickName:', err);
+  }
+};
+
+  const deleteRegister = async () =>{
+    await AsyncStorage.removeItem('preferences');
+    await AsyncStorage.removeItem('nickName');
+    setPreferences(null);
+    setNickName(null);
+    
+  };
+
+  const loadDraft = async () =>{
+    try{ 
+      const storedList = await AsyncStorage.getItem("draftList");
+      if(storedList){
+        const parsedList = JSON.parse(storedList); 
+        setDraftList(Array.isArray(parsedList) ? parsedList : []);
+      }
+    }catch(error){
+      console.log("No se pudo cargar draftList", error.message);
     }
   };
 
+  const getRecipeKey = (name) => name.trim().toLowerCase();
+
+const addTolist = async (recipe, forceReplace = false) => {
+  const key = getRecipeKey(recipe.name);
+
+  const index = draftList.findIndex(
+    r => getRecipeKey(r.name) === key
+  );
+
+  let updatedList = [...draftList];
+
+  if (index !== -1) {
+    if (forceReplace) {
+      updatedList[index] = recipe; 
+    } else {
+      return false; 
+    }
+  } else {
+    updatedList.push(recipe); 
+  }
+
+  setDraftList(updatedList);
+  await AsyncStorage.setItem('draftList', JSON.stringify(updatedList));
+  return true;
+};
+
+const removeFromList = async (recipeName) => {
+  const key = getRecipeKey(recipeName);
+
+  const updatedList = draftList.filter(
+    (r) => getRecipeKey(r.name) !== key
+  );
+
+  setDraftList(updatedList);
+  await AsyncStorage.setItem('draftList', JSON.stringify(updatedList));
+};
+
+
   useEffect(() => {
     checkLoginStatus();
+    loadDraft();
   }, []);
 
   return (
@@ -111,7 +207,17 @@ export const AuthProvider = ({ children }) => {
       loading,
       login,
       logout,
-      setToken
+      setToken,
+      setPreferences,
+      preferences,
+      loadPreferences,
+      nickName,
+      setNickName,
+      loadNickName,
+      deleteRegister,
+      addTolist,
+      removeFromList,
+      draftList
     }}>
       {children}
     </AuthContext.Provider>

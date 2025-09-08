@@ -19,7 +19,9 @@ import useExistInList from '../../api/RECIPE-SERVICE/archived/existRecipe';
 import prepareRecipeForSend from "../../helper/prepareRecipeForSend";
 import addRecipeToList from '../../api/RECIPE-SERVICE/archived/addToList';
 import deleteToList from "../../api/RECIPE-SERVICE/archived/deleteToList";
-import BackButtonComponent from "../../components/BackButtonComponent"
+import InfoRow from './InfoRows';
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function RecipeDetailScreen({ navigation }) {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -28,6 +30,8 @@ export default function RecipeDetailScreen({ navigation }) {
   const { id, source = "main" } = route.params ?? {};
 
   const { token } = useContext(AuthContext);
+
+  const { isConnected, retryConnection } = useNetworkGuard();
 
   const {
   data: recipeData,
@@ -64,7 +68,12 @@ export default function RecipeDetailScreen({ navigation }) {
     try {
       let response;
       if (!isFavorite) {
-        const recipe = prepareRecipeForSend(recipeData, ingredients, portion);
+        const recipe = {
+        ...prepareRecipeForSend(recipeData, ingredients, portion, true),
+        recipeId: recipeData._id || id,
+        numberOfStart:recipeData.numberOfStart
+      };
+      console.log(recipeData.numberOfStart)
         response = await addRecipeToList(token, recipe);
       } else {
         response = await deleteToList(token, id);
@@ -105,11 +114,17 @@ export default function RecipeDetailScreen({ navigation }) {
     }
   };
 
+  if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+      }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <BackButtonComponent navigation={navigation} mode='goBack'/>
         <Image source={{ uri: recipeData.image }} style={styles.image} />
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </TouchableOpacity>
 
 
         <View style={styles.starsRow}>
@@ -121,7 +136,7 @@ export default function RecipeDetailScreen({ navigation }) {
               color="gold"
             />
           ))}
-          { source !== "profile" &&
+          { source !== "profile" && token !== null &&
           <TouchableOpacity onPress={() => handleList()}>
             <Ionicons
               name={isFavorite ? 'bookmark' : 'bookmark-outline'}
@@ -132,12 +147,14 @@ export default function RecipeDetailScreen({ navigation }) {
           </TouchableOpacity>
           }
         </View>
-        <View style={styles.infoRow}>
-          <Text>🛒 {recipeData.ingredients.length}</Text>
-          <Text>💪 {recipeData.difficulty}</Text>
-          <Text>⏰ {recipeData.time}</Text>
+        <View style={{alignItems:"center"}}>
+        <Text style={{fontSize:18,fontWeight:700,padding:10}}>{recipeData.name}</Text>
         </View>
-
+        <InfoRow
+        ingredients={recipeData.ingredients.length}
+        difficulty={recipeData.difficulty}
+        time={recipeData.time}
+        />
         <View style={styles.tabsRow}>
           <TouchableOpacity onPress={() => setActiveTab('Ingredientes')}>
             <Text style={activeTab === 'Ingredientes' ? styles.activeTab : styles.inactiveTab}>
@@ -186,7 +203,7 @@ export default function RecipeDetailScreen({ navigation }) {
           </View>
         )}
 
-        {dataComment && (
+        {dataComment && token!==null && (
           (dataComment.success && !dataComment.userHasVoted) || (!dataComment.success) ? (
             <TouchableOpacity
               style={styles.ratingButton}
@@ -231,17 +248,22 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
-    paddingBottom: 80, // para que no quede tapado por el ButtonBar fijo
+    paddingBottom: 120, 
   },
+ backButton: {
+  position: 'absolute',
+  top: 30,
+  padding: 2,
+  borderWidth: 2,
+  borderColor: 'white',
+  borderRadius: 50,
+   top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 40,
+    left: 10,
+    zIndex: 10,
+},
   image: {
     width: '100%',
     height: 200,
-  },
-  backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 40,
-    left: 10,
-    zIndex: 10,
   },
   starsRow: {
     flexDirection: 'row',

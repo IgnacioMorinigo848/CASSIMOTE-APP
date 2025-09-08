@@ -6,19 +6,17 @@ import {
   Image,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  FlatList,
 } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
-import StarRating from "../../components/StarRating";
 
 export default function ExpandableRecipeCard({
   recipe,
   showApprove = true,
   showDelete = true,
+  showCreater = true,
+  showAdd = false,
   onAprove,
   onDelete,
-  navigation,
-  source,
 }) {
   const [expandedSection, setExpandedSection] = useState(null);
 
@@ -44,10 +42,14 @@ export default function ExpandableRecipeCard({
           </View>
 
           <View style={styles.contentData}>
-            <Text style={styles.text}>{recipe.nickName}</Text>
-            <Text style={styles.text}>{recipe.name}</Text>
-            <StarRating size={18} rating={recipe.numberOfStart} />
-
+            {showCreater && <Text style={styles.text}>Creador: {recipe.nickName}</Text>}
+            <Text style={styles.text}>Titulo: {recipe.name}</Text>
+            <Text style={styles.text}>Description: {recipe.description}</Text>
+            <Text style={styles.text}>Porciones: {recipe.portions}</Text>
+            <Text style={styles.text}>Tipo de Plato: {recipe.typeOfDish}</Text>
+            <Text style={styles.text}>Tipo de Dieta: {recipe.typeOfDiet}</Text>
+            <Text style={styles.text}>Tiempo: {recipe.time}</Text>
+            <Text style={styles.text}>Dificultad: {recipe.difficulty}</Text>
             <View style={styles.toggleButtons}>
               <TouchableOpacity onPress={() => toggleSection("ingredientes")}>
                 <Text style={styles.toggleText}>Ingredientes</Text>
@@ -77,6 +79,12 @@ export default function ExpandableRecipeCard({
                 <TouchableOpacity style={styles.button} onPress={onAprove}>
                   <MaterialIcons name="edit" size={20} color="black" />
                   <Text style={styles.editText}>Aprobar</Text>
+                </TouchableOpacity>
+              )}
+              {showAdd && (
+                <TouchableOpacity style={styles.button} onPress={onAprove}>
+                  <MaterialIcons name="add" size={20} color="black" />
+                  <Text style={styles.deleteText}>Cargar</Text>
                 </TouchableOpacity>
               )}
               {showDelete && (

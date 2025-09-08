@@ -1,6 +1,45 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useContext } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Linking, Platform } from 'react-native';
+import { AuthContext } from '../../context/AuthContext';
 
-export default function StepFour() {
+export default function StepFour({ navigation,route }) {
+
+  const {recipe,mode} = route.params
+  const {addTolist} = useContext(AuthContext);
+ 
+  const handleSave = async () => {
+  recipe.mode = mode;
+  const wasAdded = await addTolist(recipe);
+
+  if (!wasAdded) {
+    Alert.alert(
+      "La receta ya existe con ese nombre.",
+      "¿Qué deseas hacer?",
+      [
+        {
+          text: "Reemplazar",
+          onPress: async () => {
+            await addTolist(recipe, true);
+            navigation.replace("home");
+          },
+        },
+        {
+          text: "Ignorar",
+          style: "cancel",
+          onPress: () => {
+            navigation.replace("home");
+          },
+        },
+      ]
+    );
+  } else {
+    navigation.replace("home");
+  }
+};
+
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Crea tu propia receta</Text>
@@ -16,13 +55,14 @@ export default function StepFour() {
       </View>
 
       <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={styles.btn}>
+        <TouchableOpacity style={styles.btn} onPress={async ()=> await handleSave()}>
           <Text style={styles.btnText}>Guardar Cambios</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.btn}>
-          <Text style={styles.btnText}>Cambiar Red</Text>
+        <TouchableOpacity style={styles.btn} onPress={()=>navigation.goBack()}>
+          <Text style={styles.btnText}>Volver</Text>
         </TouchableOpacity>
+
       </View>
     </View>
   );

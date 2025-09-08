@@ -4,6 +4,8 @@ import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import ButtonBack from '../../components/BackButtonComponent';
 import { useStepOneForm } from "../../hooks/USER-SERVICE/recoverAccount/useStepOneForm";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function StepOne({navigation}) {
  
@@ -14,7 +16,11 @@ export default function StepOne({navigation}) {
     handleSubmit,
     getEmailError
   } = useStepOneForm(navigation);
+  const { isConnected, retryConnection } = useNetworkGuard();
 
+  if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+      }
 
   return (
     <SafeAreaView style={styles.container}>

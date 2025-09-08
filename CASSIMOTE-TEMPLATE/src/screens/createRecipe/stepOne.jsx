@@ -4,6 +4,8 @@ import { useState, useContext } from 'react';
 import BackButtonComponent from "../../components/BackButtonComponent";
 import existName from "../../api/RECIPE-SERVICE/createRecipe/existName";
 import { AuthContext } from '../../context/AuthContext';
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function StepOne({ navigation }) {
   const [title, setTitle] = useState("");
@@ -14,7 +16,7 @@ export default function StepOne({ navigation }) {
   const [recipeData, setRecipeData] = useState(null); 
 
   const { token } = useContext(AuthContext);
-
+  const { isConnected, retryConnection } = useNetworkGuard();
   const handleOptionPress = (option) => {
     const baseRecipe = {
       name: recipeData?.name,
@@ -41,13 +43,17 @@ export default function StepOne({ navigation }) {
       case 'Reemplazar Existente':
         navigation.navigate('stepTwo', {
           mode: 'REPLACE',
-          recipe: baseRecipe
+          recipe: baseRecipe,
+          activate:false,
+          id:""
         });
         break;
       case 'Editar Existente':
         navigation.navigate('stepTwo', {
           mode: 'UPDATE',
-          recipe: baseRecipe
+          recipe: baseRecipe,
+          activate:false,
+          id:""
         });
         break;
       default:
@@ -76,6 +82,10 @@ export default function StepOne({ navigation }) {
       setChecking(false);
     }
   };
+
+  if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+  }
 
   return (
     <View style={styles.container}>
@@ -138,7 +148,9 @@ export default function StepOne({ navigation }) {
             recipe: {
               name: recipeData.name,
               nickName: recipeData.nickName, 
-            }
+            },
+            activate:false,
+            id:""
           })}
         >
           <Text style={styles.nextText}>Crear receta</Text>

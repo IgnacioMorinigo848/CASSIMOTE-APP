@@ -2,47 +2,67 @@ import { useState,useContext } from "react";
 import { View, Text,SafeAreaView, StyleSheet,Platform,StatusBar  } from "react-native";
 import {ButtonComponent,ButtonBack,InputComponent,RadioButton,validateSignIn} from "./index";
 import {AuthContext} from "../../context/AuthContext"
+import { CommonActions } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
-export default function SingIn({navigation}){
+export default function SignIn({navigation}){
     const [email, setEmail] = useState("");
-    const [nickName, setNickName] = useState("");
     const [password, setPassword] = useState("");
     const [error,setError] = useState({});
     const [selected, setSelected] = useState(false);
     const { login } = useContext(AuthContext);
-
+    const { isConnected, retryConnection } = useNetworkGuard();
+    
     const validate = () => {
-        const newError = validateSignIn({ email, nickName, password });
+        const newError = validateSignIn({ email, password });
     setError(newError);
     return Object.keys(newError).length === 0;
     };
 
     const handleLogin = async () => {
-    if (validate()){
-      const result = await login(nickName, email, password);
-        if (result.success) {
-        console.log(result.message)
-        navigation.navigate("home")
-        } else {
-          setError(result.message);
-          console.log(result.message)
+  if (validate()) {
+    const result = await login(email, password, selected);
+
+    if (result.success) {
+      // Guardar las credenciales solo si se marcó "Recuérdame"
+      if (selected) {
+        try {
+          await AsyncStorage.setItem('rememberMe', JSON.stringify(selected));
+          await AsyncStorage.setItem('email', email);
+          await AsyncStorage.setItem('password', password);
+          console.log("Exitoso")
+        } catch (e) {
+          console.log("Error guardando sesión:", e);
         }
+      } else {
+        // Limpiar si no está marcado
+        await AsyncStorage.multiRemove(['rememberMe', 'email', 'password']);
+      }
+
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'home' }],
+        })
+      );
+    } else {
+      setError(result.message);
+      console.log(result.message);
     }
-    };
+  }
+};
+if (!isConnected) {
+      return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+    }
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.buttonBackComponet}><ButtonBack navigation={navigation}/></View>
+            <View style={styles.buttonBackComponet}><ButtonBack navigation={navigation} mode="reset" to="welcome"/></View>
             <View style={styles.content}>
                 <Text style={styles.title}>Iniciar Sesion</Text>
                 <View style={styles.input}>
-                    <InputComponent
-                        value={nickName}
-                        onChangeText={setNickName}
-                        placeholder="Alias"
-                        error={error.nickName}
-                        showValidationIcon={false}
-                    />
                     <InputComponent
                         value={email}
                         onChangeText={setEmail}
@@ -69,6 +89,7 @@ export default function SingIn({navigation}){
                     </View>
                 </View>
                 <ButtonComponent onPress={handleLogin}>INICIAR SESION</ButtonComponent>
+                <ButtonComponent onPress={()=>{navigation.navigate("onboarding")}}>CREAR CUENTA</ButtonComponent>
             </View>
         </SafeAreaView>
     );

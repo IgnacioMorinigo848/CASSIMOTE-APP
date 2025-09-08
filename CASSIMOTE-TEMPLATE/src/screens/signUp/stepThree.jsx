@@ -4,9 +4,54 @@ import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import ButtonBack from '../../components/BackButtonComponent';
 import { useStepThreeForm } from '../../hooks/USER-SERVICE/signUp/useStepThreeForm';
+import { CommonActions } from '@react-navigation/native';
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import AddInterest from "../../api/RECIPE-SERVICE/preferences/addPreferences";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function StepThree({ navigation }) {
   const { password, setPassword, error, loading, handleSubmit } = useStepThreeForm(navigation);
+  const {preferences, nickName,deleteRegister} = useContext(AuthContext);
+  const { isConnected, retryConnection } = useNetworkGuard();
+
+  const handleSubmitFinal = async () => {
+  try {
+    console.log("▶️ Entrando al método...");
+    console.log("✔️ Datos recibidos:", preferences, nickName);
+
+    if (preferences && nickName) {
+      const interests = {
+        ability: preferences[0],
+        typeOfDish: preferences[1],
+        diet: preferences[2],
+        intolerances: preferences[3],
+        timeSpent: {
+          initial: preferences[4]?.tiempoMin ?? 0,
+          end: preferences[4]?.tiempoMax ?? 9999,
+        },
+      };
+
+      console.log("📦 Enviando preferencias:", interests);
+
+      const result = await AddInterest(nickName, interests);
+      console.log("✅ Resultado de la API:", result);
+
+      if (result?.success) {
+        handleSubmit();
+      } else {
+        navigation.replace("welcome");
+      }
+    } else {
+      console.warn("⚠️ Faltan datos: preferences o nickName no están definidos.");
+      navigation.replace("welcome");
+    }
+  } catch (error) {
+    console.error("❌ Error en handleSubmitFinal:", error);
+  }
+};
+
 
   const getPasswordError = () => {
     if (error?.general == null && error?.password) {
@@ -14,6 +59,10 @@ export default function StepThree({ navigation }) {
     }
     return error?.general;
   };
+
+   if (!isConnected) {
+        return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+      }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -31,10 +80,15 @@ export default function StepThree({ navigation }) {
             secureTextEntry
           />
         </View>
-        <ButtonComponent width="65%" color={"#26355D"} onPress={handleSubmit} disabled={loading}>
+        <ButtonComponent width="65%" color={"#26355D"} onPress={()=>handleSubmitFinal()} >
           {loading ? "Cargando..." : "SIGUIENTE"}
         </ButtonComponent>
-        <TextComponent type={"footer"} onPress={() => navigation.navigate("signIn")}>
+        <TextComponent type={"footer"} onPress={() => navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'signIn' }],
+          })
+        )}>
           Ya tenes una cuenta?
         </TextComponent>
       </View>

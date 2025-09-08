@@ -4,64 +4,71 @@ import Constants from 'expo-constants';
 
 const API_URL = Constants.expoConfig.extra.EXPO_API_URL_RECIPE;
 
-const useHomeData = (token) => {
-  console.log(token)
+const useHomeData = (token, refreshKey = null) => {
   const [data, setData] = useState(null);
   const [isSuccess, setIsSuccess] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
- const query = `
-  query {
-    home {
-      ... on homeMessageSuccess {
-        lastThreeRecipes {
-          success
-          title
-          recipes {
-            _id
-            image
+  const query = `
+    query {
+      home {
+        ... on homeMessageSuccess {
+          lastThreeRecipes {
+            success
+            title
+            recipes {
+              _id
+              image
+            }
+            message
           }
+          ability {
+            success
+            title
+            recipe {
+              _id
+              image
+            }
+            message
+          }
+          diet {
+            success
+            title
+            recipe {
+              _id
+              image
+            }
+            message
+          }
+          timeSpent {
+            success
+            title
+            recipe {
+              _id
+              image
+            }
+            message
+          }
+          typeOfDish {
+            success
+            title
+            recipe {
+              _id
+              image
+            }
+            message
+          }
+        }
+        ... on errorHomeMessage {
+          success
           message
         }
-        ability {
-          success
-          title
-          recipe {
-            _id
-            image
-          }
-          message
-        }
-        diet {
-          success
-          title
-          recipe {
-            _id
-            image
-          }
-          message
-        }
-        timeSpent {
-          success
-          title
-          recipe {
-            _id
-            image
-          }
-          message
-        }
-      }
-      ... on errorHomeMessage {
-        success
-        message
       }
     }
-  }
-`;
+  `;
 
   useEffect(() => {
-    if (!token) return;
 
     const fetchData = async () => {
       setLoading(true);
@@ -72,17 +79,15 @@ const useHomeData = (token) => {
           {
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
+              ...(token !== null ? { Authorization: `Bearer ${token}` } : {}),
             },
           }
         );
         const homeData = response.data.data.home;
-        console.log(homeData)
         setIsSuccess(homeData);
         setData(homeData);
-        console.log(response.message)
+        setError(null);
       } catch (err) {
-        console.log(err.message)
         setError("Ocurrió un error al cargar los datos.");
       } finally {
         setLoading(false);
@@ -90,8 +95,8 @@ const useHomeData = (token) => {
     };
 
     fetchData();
-  }, [token]);
-  
+  }, [token, refreshKey]); // ← esta es la clave
+
   return { data, isSuccess, loading, error };
 };
 

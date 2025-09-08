@@ -1,26 +1,79 @@
-import { View, SafeAreaView, StyleSheet, Platform, StatusBar } from "react-native";
+import { View, SafeAreaView, StyleSheet, Platform, StatusBar, TouchableOpacity, ScrollView,KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard} from "react-native";
 import InputComponent from '../../components/InputComponent';
 import TextComponent from '../../components/TextComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import ButtonBack from '../../components/BackButtonComponent';
 import { useStepOneForm } from "../../hooks/USER-SERVICE/signUp/useStepOneForm";
+import { useNicknameSuggestions } from "../../hooks/USER-SERVICE/signUp/nicknameSuggestions";
+import releaseAccount from "../../hooks/USER-SERVICE/signUp/releaseAccount" 
+import { useEffect,useState } from "react";
+import TemporaryAlert from "../../components/TemporyAlert";
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 export default function StepOne({ navigation }) {
   const {
     email,
     nickName,
+    exist,
     setEmail,
     setNickName,
+    setExist,
     error,
     loading,
     handleSubmit,
     getEmailError
   } = useStepOneForm(navigation);
 
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const { isConnected, retryConnection } = useNetworkGuard();
+
+  const {
+    suggestions,
+    loadingSuggestions,
+    fetchSuggestions
+  } = useNicknameSuggestions();
+
+  const handleRealeaseAccount = async () => {
+  const resultRealease = await releaseAccount(email); 
+  console.log(resultRealease)
+  if (resultRealease?.success) {
+    setAlertMessage("Cuenta liberada con éxito.");
+  } else {
+    setAlertMessage("Error al liberar la cuenta. Intentalo más tarde.");
+  }
+
+  setShowAlert(true);
+
+  setTimeout(() => {
+    setShowAlert(false);
+    setAlertMessage(""); 
+  }, 2000);
+};
+
+  useEffect(() => {
+    if (exist && nickName.trim().length > 0) {
+        fetchSuggestions(nickName);
+    }
+    if(exist && nickName.trim().length === 0)
+      setExist(!exist)
+  }, [exist, nickName]);
+
+  if (!isConnected) {
+    return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <ButtonBack navigation={navigation} mode="reset" to="welcome" icon="x" />
-      <View style={styles.content}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView
+      style={styles.content}
+       contentContainerStyle={styles.contentContainer}
+      >
+        <ButtonBack navigation={navigation} mode="reset" to="welcome" icon="x" />
+      <View style={styles.title}>
         <TextComponent type="title">Casiimote</TextComponent>
         <TextComponent type="info">
           Guarda tus objetivos y preferencias para sacar el máximo provecho.
@@ -43,16 +96,37 @@ export default function StepOne({ navigation }) {
             error={error?.nickName}
             showValidationIcon
           />
+
+          {exist && suggestions.length > 0 && (
+            <View style={styles.suggestions}>
+              <TextComponent type="info">Alias no disponible. Sugerencias:</TextComponent>
+              {suggestions.map((sug, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={() => setNickName(sug)}
+                  style={styles.suggestionItem}
+                >
+                  <TextComponent>{sug}</TextComponent>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         <ButtonComponent width="65%" color="#26355D" onPress={handleSubmit} disabled={loading}>
           {loading ? "Cargando..." : "SIGUIENTE"}
         </ButtonComponent>
-
+        {error && error?.statusRegistration && (
+          <ButtonComponent width="65%" color="#AF47D2" backgroundColor="#FFDB00" onPress={handleRealeaseAccount}>LIBERAR EMAIL / SOPORTE</ButtonComponent>
+        )}
         <TextComponent type="footer" onPress={() => navigation.navigate("signIn")}>
           ¿Ya tenés una cuenta?
         </TextComponent>
       </View>
+      </ScrollView>
+      <TemporaryAlert visible={showAlert} message={alertMessage} />
+       </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
@@ -64,7 +138,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-  content: {
+  content:{
+    flex:1,
+    width:"100%",
+  },
+  contentContainer:{
+    alignItems:"center"
+  },
+  title: {
     flex: 1,
     marginTop: "20%",
     width: "90%",
@@ -73,11 +154,17 @@ const styles = StyleSheet.create({
   },
   input: {
     marginTop: "2%",
+    gap: 10,
   },
-  title: {
-    color: "#000",
-    fontSize: 30,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  suggestions: {
+    marginTop: 10,
+    paddingHorizontal: 10,
   },
+  suggestionItem: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: "#eee",
+    borderRadius: 8,
+    marginVertical: 4,
+  }
 });

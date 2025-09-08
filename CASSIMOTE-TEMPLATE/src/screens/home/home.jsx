@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext,useState } from 'react';
 import { View, SafeAreaView, ScrollView, ActivityIndicator, Text } from 'react-native';
 import styles from './styles';
 import SearchBar from '../../components/SearchBar';
@@ -8,29 +8,77 @@ import CategoryCard from '../../components/CategoryCard';
 import BottomBar from '../../components/BottonBar';
 import useHomeData from '../../api/RECIPE-SERVICE/home/home';
 import { AuthContext } from '../../context/AuthContext';
+import searchByName from "../../api/RECIPE-SERVICE/search/searchByName"
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
-export default function Home() {
+export default function Home({navigation}) {
   const { token } = useContext(AuthContext);
-  console.log("token desde el home:", token)
-  const { data, loading, error } = useHomeData(token);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { data, loading, error } = useHomeData(token,refreshKey);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loadingSearch,setLoadingSearch] = useState(false);
+  const { isConnected, retryConnection,isChecking } = useNetworkGuard();
 
   useEffect(() => {
-    if (!loading && data) console.log("🟢 HOME DATA:", data);
-    if (!loading && error) console.error("🔴 ERROR AL CARGAR HOME:", error);
-  }, [loading, data, error]);
+  if (isConnected) {
+    setRefreshKey(prev => prev + 1);
+  }
+}, [isConnected]);
 
-  if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+  if (isChecking) {
+  console.log("chequeando")
+  return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+}
+
+
+if (!isConnected) {
+      return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+    }
+
+  if (loading || loadingSearch) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
 
   if (error) return <Text style={{ color: 'red', textAlign: 'center' }}>Error: {error.message}</Text>;
 
-  const { lastThreeRecipes, diet, timeSpent, ability } = data;
+  const { lastThreeRecipes, diet, timeSpent, ability,typeOfDish } = data;
 
-  const categories = [diet, timeSpent, ability];
+  const categories = [diet, timeSpent, ability,typeOfDish];
+
+  const getSearch = async (searchTerm) => {
+    if(searchTerm){
+  setLoadingSearch(true);
+  const result = await searchByName(token, searchTerm);
+  setLoadingSearch(false);
+
+  if (result?.success) {
+    navigation.navigate("filteredResults", {
+      recipesName: result.recipes,
+      errorName: null,
+      option: 1,
+      text:searchTerm
+    });
+  } else {
+    navigation.navigate("filteredResults", {
+      recipesName: null,
+      errorName: result?.message || 'Error desconocido',
+      option: 1,
+      text:searchTerm
+    });
+  }
+   setSearchTerm("")
+}
+};
+
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <SearchBar/>
+        <SearchBar 
+        value={searchTerm}
+        onChangeText={(text) => {setSearchTerm(text)}}
+        searchAction={()=>{ getSearch(searchTerm)}} 
+        filterAction={()=> {navigation.navigate("filteredResults")}}
+        />
       {lastThreeRecipes?.success && (
         <>
           <SectionTitle title={lastThreeRecipes.title} />
@@ -44,18 +92,28 @@ export default function Home() {
           </ScrollView>
         </>
       )}
-      
+      {token !== null && (
+        <>
         <SectionTitle title="Categorías" />
-     <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}>
-  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: "space-between", width: "100%" }}>
-    {categories.map((item, index) => (
-      item?.success && <CategoryCard key={index} data={item} />
-    ))}
-  </View>
-</ScrollView>
-
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: "space-between", width: "100%" }}>
+      {categories.map((item, index) => (
+        item?.success && <CategoryCard key={index} data={item} />
+        ))}
       </View>
-
+    </ScrollView>
+    </>
+    )}
+     {!token && (
+      <>
+      <View style={styles.guestContainer}>
+        <View style={styles.guestContent}>
+        <Text style={styles.guestMessage}>Se debe Iniciar Sesion para acceder a todas las funciones</Text>
+      </View>
+      </View>
+      </>
+    )}
+      </View>
       <BottomBar />
     </SafeAreaView>
   );

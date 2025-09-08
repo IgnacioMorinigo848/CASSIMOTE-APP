@@ -14,11 +14,14 @@ import ButtonBar from "../../components/BottonBar";
 import { AuthContext } from '../../context/AuthContext';
 import useGetList from '../../api/RECIPE-SERVICE/archived/getList';
 import deleteToList from '../../api/RECIPE-SERVICE/archived/deleteToList';
+import useNetworkGuard from "../../hooks/useNetworkGuard";
+import ConnectionScreen from "../connetion/connectionScreen";
 
 const ArchivedScreen = ({navigation}) => {
   const { token } = useContext(AuthContext);
   const { data, loading, error } = useGetList(token);
   const [recipes, setRecipes] = useState([]);
+  const { isConnected, retryConnection } = useNetworkGuard();
 
   useEffect(() => {
     if (!loading && data?.recipes) {
@@ -43,6 +46,10 @@ const ArchivedScreen = ({navigation}) => {
     return <ActivityIndicator size="large" style={{ flex: 1 }} />;
   }
 
+  if (!isConnected) {
+    return <ConnectionScreen visible={true} onRetry={retryConnection} />;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -53,6 +60,7 @@ const ArchivedScreen = ({navigation}) => {
           </Text>
         ) : (
           <FlatList
+          style={{marginBottom:100}}
             data={recipes}
             keyExtractor={(item) => item.recipeId}
             renderItem={({ item }) => (
